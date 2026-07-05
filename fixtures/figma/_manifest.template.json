@@ -1,0 +1,21 @@
+{
+  "$comment": "MCP 캡처 매니페스트 템플릿. <capture-name>/manifest.json 로 복사해 채운다. calls[]가 어느 파일이 어느 도구/노드 응답인지 매핑 → 재생 시 extractor가 이걸 읽어 파일을 고른다.",
+  "source": {
+    "figmaUrl": "https://www.figma.com/design/<fileKey>/<name>?node-id=<page>",
+    "page": "<page name>",
+    "mode": "page"
+  },
+  "capturedAt": "<ISO8601>",
+  "sections": [
+    { "name": "<Section A>", "slug": "section-a", "nodeId": "0:0" },
+    { "name": "<Section B>", "slug": "section-b", "nodeId": "0:0" },
+    { "name": "<Section C>", "slug": "section-c", "nodeId": "0:0" },
+    { "name": "<Section D>", "slug": "section-d", "nodeId": "0:0" }
+  ],
+  "calls": [
+    { "tool": "get_metadata",      "scope": "page",              "args": { "nodeId": "0:0" }, "file": "get_metadata.json" },
+    { "tool": "get_variable_defs", "scope": "page",              "args": { "nodeId": "0:0" }, "file": "get_variable_defs.json" },
+    { "tool": "get_screenshot",    "scope": "section:section-a", "args": { "nodeId": "0:0" }, "file": "sections/section-a/screenshot.png" },
+    { "tool": "get_design_context","scope": "section:section-a", "args": { "nodeId": "0:0" }, "file": "sections/section-a/get_design_context.json" }
+  ]
+}

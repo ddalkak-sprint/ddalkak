@@ -2,26 +2,30 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "ddalkak/bridge.schema.json",
   "title": "Ddalkak Design Bridge",
-  "description": "Figma를 AI 친화 형태로 정규화한 디자인 브릿지. bridge 단계가 산출, plan/code/verify가 소비하는 SSOT.",
+  "description": "Figma를 무손실로 정규화한 디자인 브릿지(v2.0). 토큰을 쓰되 원본값이 항상 복원 가능하고, MCP 상세정보와 스크린샷 교차검증 결과, 반응형 그룹까지 담는다. bridge 단계가 산출, plan/code/verify가 소비하는 SSOT. 규칙: figma-extraction-rules.md",
   "type": "object",
-  "required": ["meta", "screens"],
+  "required": ["meta", "tokens", "screens"],
   "properties": {
     "meta": {
       "type": "object",
-      "required": ["figmaUrl", "mode"],
+      "required": ["figmaUrl", "mode", "schemaVersion"],
       "properties": {
         "figmaUrl": { "type": "string" },
         "mode": { "enum": ["section", "page"] },
-        "extractedAt": { "type": "string" },
-        "schemaVersion": { "type": "string", "description": "예: '1.1'. 없으면 '1.0'으로 취급." }
+        "schemaVersion": { "const": "2.0" },
+        "fidelity": { "enum": ["lossless", "summary"], "default": "lossless", "description": "lossless=구조 접기만 하고 속성·자산 전량 캡처, summary=축약 허용" },
+        "extractedAt": { "type": "string" }
       }
     },
     "tokens": {
       "type": "object",
+      "description": "이름→원본값 사전. 노드에서 '@color.primary'처럼 참조하면 여기서 원본 복원. 토큰 참조를 써도 무손실인 근거.",
       "properties": {
         "color":   { "type": "object", "additionalProperties": { "type": "string" } },
-        "type":    { "type": "object" },
-        "spacing": { "type": "object" }
+        "type":    { "type": "object", "additionalProperties": { "$ref": "#/$defs/typography" } },
+        "spacing": { "type": "object", "additionalProperties": { "type": "number" } },
+        "radius":  { "type": "object", "additionalProperties": { "type": ["number", "array"] } },
+        "effect":  { "type": "object", "additionalProperties": { "$ref": "#/$defs/effect" } }
       }
     },
     "screens": {
@@ -32,9 +36,11 @@
         "properties": {
           "name":  { "type": "string" },
           "frame": { "type": "object", "properties": { "w": { "type": "number" }, "h": { "type": "number" } } },
-          "nodes": { "type": "array", "items": { "$ref": "#/$defs/node" } },
-          "breakpoint":   { "enum": ["mobile", "tablet", "desktop", "default"], "description": "반응형 그룹의 일부일 때만 채움. figma-extraction-rules.md §5" },
-          "variantGroup": { "type": "string", "description": "같은 논리 화면의 breakpoint들을 묶는 이름. figma-extraction-rules.md §5" }
+          "breakpoint":   { "enum": ["mobile", "tablet", "desktop", "default"], "description": "반응형 그룹의 일부일 때만. rules §5" },
+          "variantGroup": { "type": "string", "description": "같은 논리 화면의 breakpoint들을 묶는 이름. rules §5" },
+          "screenshot":   { "type": "string", "description": "이 화면의 스크린샷 asset id. 교차검증(rules §8)과 verify 단계가 재사용." },
+          "reconciliation": { "$ref": "#/$defs/reconciliation" },
+          "nodes": { "type": "array", "items": { "$ref": "#/$defs/node" } }
         }
       }
     },
@@ -42,9 +48,12 @@
       "type": "array",
       "items": {
         "type": "object",
+        "required": ["id"],
         "properties": {
           "id":     { "type": "string" },
-          "export": { "type": "string" }
+          "kind":   { "enum": ["image", "vector", "screenshot"], "description": "screenshot=화면 교차검증용, 나머지=디자인 자산" },
+          "export": { "type": "string", "description": "저장 경로 (download_assets로 실제 파일 확보. rules §2/§6)" },
+          "format": { "enum": ["svg", "png", "jpg", "webp"] }
         }
       }
     }
@@ -54,18 +63,139 @@
       "type": "object",
       "required": ["type"],
       "properties": {
-        "type":     { "enum": ["text", "image", "group", "shape", "component"] },
-        "content":  { "type": "string" },
-        "ref":      { "type": "string" },
-        "layout":   { "type": "string" },
-        "gap":      { "type": "number" },
-        "style":    { "type": "object" },
-        "bbox":     { "type": "array", "items": { "type": "number" } },
+        "type":     { "enum": ["frame", "group", "text", "image", "vector", "shape", "line", "ellipse", "component", "instance"] },
+        "name":     { "type": "string", "description": "Figma 레이어 이름 (퍼블 시맨틱 힌트)" },
+        "content":  { "type": "string", "description": "text 노드의 전체 평문 (편의용). 부분 스타일은 runs 참조" },
+        "runs":     { "type": "array", "items": { "$ref": "#/$defs/textRun" }, "description": "text 노드의 부분 스타일 구간 (mixed runs 무손실)" },
+        "ref":      { "type": "string", "description": "image/vector 노드가 가리키는 assets[].id" },
+        "layout":   { "$ref": "#/$defs/layout" },
+        "constraints": { "$ref": "#/$defs/constraints" },
+        "style":    { "$ref": "#/$defs/style" },
+        "bbox":     { "type": "array", "items": { "type": "number" }, "minItems": 4, "maxItems": 4, "description": "[x, y, w, h] (부모 프레임 기준)" },
         "children": { "type": "array", "items": { "$ref": "#/$defs/node" } },
-        "componentName":           { "type": "string", "description": "type=component일 때만. Figma 메인 컴포넌트 이름. figma-extraction-rules.md §3" },
-        "isDesignSystemComponent": { "type": "boolean", "description": "true면 재사용, false/누락이면 code 단계가 신규 생성" },
-        "mappedCodeComponent":     { "type": ["string", "null"], "description": "Code Connect 또는 design.md 규칙으로 매핑된 코드 컴포넌트 경로" },
-        "componentProps":          { "type": "object", "description": "인스턴스의 variant/property 값" }
+        "componentName":           { "type": "string", "description": "type=component/instance일 때. rules §3" },
+        "isDesignSystemComponent": { "type": "boolean" },
+        "mappedCodeComponent":     { "type": ["string", "null"] },
+        "componentProps":          { "type": "object" }
+      }
+    },
+    "layout": {
+      "type": "object",
+      "description": "오토레이아웃. rules §7",
+      "properties": {
+        "mode":    { "enum": ["row", "column", "wrap", "none"] },
+        "padding": { "type": "array", "items": { "type": "number" }, "minItems": 4, "maxItems": 4, "description": "[top, right, bottom, left]" },
+        "gap":     { "type": ["number", "string"], "description": "숫자 또는 '@spacing.md' 토큰 참조" },
+        "primaryAxisAlign": { "enum": ["start", "center", "end", "space-between"] },
+        "counterAxisAlign": { "enum": ["start", "center", "end", "stretch"] },
+        "sizing":  {
+          "type": "object",
+          "properties": {
+            "horizontal": { "enum": ["hug", "fill", "fixed"] },
+            "vertical":   { "enum": ["hug", "fill", "fixed"] }
+          }
+        }
+      }
+    },
+    "constraints": {
+      "type": "object",
+      "description": "부모 리사이즈 시 이 노드의 반응 규칙. rules §5",
+      "properties": {
+        "horizontal": { "enum": ["left", "right", "left-right", "center", "scale"] },
+        "vertical":   { "enum": ["top", "bottom", "top-bottom", "center", "scale"] }
+      }
+    },
+    "style": {
+      "type": "object",
+      "description": "열거된 시각 속성. 값은 '@token.path' 참조 또는 raw 리터럴 — 둘 중 하나로 항상 채워 무손실 보장. rules §4",
+      "properties": {
+        "fills":        { "type": "array", "items": { "$ref": "#/$defs/fill" } },
+        "strokes":      { "type": "array", "items": { "$ref": "#/$defs/stroke" } },
+        "effects":      { "type": "array", "items": { "$ref": "#/$defs/effect" } },
+        "cornerRadius": { "type": ["number", "string", "array"], "description": "숫자 / '@radius.md' / [tl,tr,br,bl]" },
+        "opacity":      { "type": "number" },
+        "blendMode":    { "type": "string" },
+        "clipsContent": { "type": "boolean" },
+        "font":         { "description": "text 노드: '@type.body-md' 참조 또는 인라인 typography 객체" }
+      }
+    },
+    "typography": {
+      "type": "object",
+      "properties": {
+        "family":        { "type": "string" },
+        "size":          { "type": "number" },
+        "weight":        { "type": "number" },
+        "lineHeight":    { "type": ["number", "string"] },
+        "letterSpacing": { "type": ["number", "string"] },
+        "textAlign":     { "enum": ["left", "center", "right", "justify"] },
+        "textCase":      { "enum": ["none", "upper", "lower", "title"] },
+        "textDecoration":{ "enum": ["none", "underline", "line-through"] }
+      }
+    },
+    "textRun": {
+      "type": "object",
+      "required": ["text"],
+      "properties": {
+        "text":  { "type": "string" },
+        "style": { "$ref": "#/$defs/style" }
+      }
+    },
+    "fill": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type":      { "enum": ["solid", "gradient", "image"] },
+        "color":     { "type": "string", "description": "solid: '@color.primary' 또는 '#RRGGBB(AA)'" },
+        "gradient":  {
+          "type": "object",
+          "properties": {
+            "kind":  { "enum": ["linear", "radial", "angular"] },
+            "angle": { "type": "number" },
+            "stops": { "type": "array", "items": { "type": "object", "properties": { "color": { "type": "string" }, "position": { "type": "number" } } } }
+          }
+        },
+        "ref":       { "type": "string", "description": "image fill이 가리키는 assets[].id" },
+        "scaleMode": { "enum": ["fill", "fit", "tile", "stretch"] },
+        "opacity":   { "type": "number" }
+      }
+    },
+    "stroke": {
+      "type": "object",
+      "properties": {
+        "color":  { "type": "string" },
+        "weight": { "type": "number" },
+        "align":  { "enum": ["inside", "center", "outside"] },
+        "dash":   { "type": "array", "items": { "type": "number" } }
+      }
+    },
+    "effect": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type":   { "enum": ["drop-shadow", "inner-shadow", "layer-blur", "background-blur"] },
+        "color":  { "type": "string" },
+        "offset": { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 },
+        "radius": { "type": "number" },
+        "spread": { "type": "number" }
+      }
+    },
+    "reconciliation": {
+      "type": "object",
+      "description": "구조 데이터 vs 스크린샷 교차검증 결과. rules §8",
+      "required": ["status"],
+      "properties": {
+        "status": { "enum": ["match", "discrepancies"] },
+        "discrepancies": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "kind":   { "enum": ["missing-node", "extra-node", "style-mismatch", "text-mismatch", "position-mismatch"] },
+              "detail": { "type": "string" },
+              "resolved": { "type": "boolean", "description": "재추출로 보정했으면 true" }
+            }
+          }
+        }
       }
     }
   }

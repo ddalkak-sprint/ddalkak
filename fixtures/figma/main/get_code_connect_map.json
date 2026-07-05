@@ -1,0 +1,5 @@
+{
+  "status": "unavailable",
+  "reason": "You need a Dev or Full seat on an Organization or Enterprise plan to use Code Connect. Current plan: team starter (tier=starter). No Code Connect mappings available.",
+  "debugUuid": "14dfd7e8-9186-464a-a2a6-1ad1d185ea7d"
+}

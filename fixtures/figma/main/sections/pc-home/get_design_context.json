@@ -1,0 +1,32 @@
+{
+  "nodeId": "9:565",
+  "name": "[PC] /",
+  "assetConstants": {
+    "imgImg": "https://www.figma.com/api/mcp/asset/8dd5977b-bfd3-4500-b4a4-e8f9677d9baf",
+    "imgImage54": "https://www.figma.com/api/mcp/asset/7672a700-51c5-4d96-93e7-c28254b9eff4",
+    "imgGroup25": "https://www.figma.com/api/mcp/asset/b94ea873-fadd-417e-9edc-70850be4b7bb",
+    "imgIcArrowRight": "https://www.figma.com/api/mcp/asset/93c2c098-edcf-4ea9-b4aa-e8a4d1735e13",
+    "imgEmojiAddRegularIcon20361511": "https://www.figma.com/api/mcp/asset/0dc4e532-f9b3-4e89-9910-9af5eb038aa5",
+    "imgIconColor": "https://www.figma.com/api/mcp/asset/6274b6f3-a62e-4766-ad17-de78195eb826"
+  },
+  "styles": {
+    "white": "#FFFFFF",
+    "Font/18 Bold": "Font(family: Pretendard, style: Bold, size: 18, weight: 700, lineHeight: 28, letterSpacing: -1)",
+    "Purple/600": "#9935FF",
+    "gray / 200": "#EEEEEE",
+    "Purple/700": "#861DEE",
+    "Purple/200": "#ECD9FF",
+    "gray / 500": "#555555",
+    "Font/14 Bold": "Font(family: Pretendard, style: Bold, size: 14, weight: 700, lineHeight: 20, letterSpacing: -0.5)",
+    "gray / 900": "#181818",
+    "Font/24 Bold": "Font(family: Pretendard, style: Bold, size: 24, weight: 700, lineHeight: 36, letterSpacing: -1)",
+    "Font/18 Regular": "Font(family: Pretendard, style: Regular, size: 18, weight: 400, lineHeight: 28, letterSpacing: -1)",
+    "Surface": "#F6F8FF",
+    "primary/purple-50": "#A64EFF",
+    "gray/light/gray-90": "#4A494F",
+    "Font/16 Bold": "Font(family: Pretendard, style: Bold, size: 16, weight: 700, lineHeight: 26, letterSpacing: -1)",
+    "gray / 300": "#CCCCCC"
+  },
+  "codeSummary": "React+Tailwind reference code for the [PC] / landing frame (1920x1080). Root bg-white. Children: bottom (CTA button '구경해보기' bg #9935FF radius 12), Frame 2625 (column gap 30, two feature cards img_01/img_02 bg #F6F8FF radius 16 h324 w1200), header (1920x64, logo 'Rolling' + outlined button '롤링 페이퍼 만들기', bottom line #EDEDED). img_01: Point.01 badge (#9935FF pill radius 50) + heading '누구나 손쉽게, 온라인 롤링 페이퍼를 만들 수 있어요' (24 Bold #181818) + sub '로그인 없이 자유롭게 만들어요.' (18 Regular #555) on left; decorative message-card instance (imgImg avatars, from 박대영/강미나, tags #ECD9FF/#E2F5FF) on right. img_02: emoji-reaction instance (rounded chips bg rgba(0,0,0,0.54) with emojis, '추가' add button) on left; Point.02 badge + heading '서로에게 이모지로 감정을 표현해보세요' + sub '롤링 페이퍼에 이모지를 추가할 수 있어요.' on right.",
+  "rawCodeAvailable": true
+}

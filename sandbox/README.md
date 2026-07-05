@@ -15,6 +15,11 @@ npm run dev        # http://localhost:5173 — 로그인 화면 렌더 확인
 /plugin marketplace add C:\project\teo_sprint\ddalkak
 /plugin install ddalkak@ddalkak-marketplace
 ```
+또는 스킬을 자주 고치는 중이면 재설치 없이 바로 로드(추천, 상세는 [../GUIDE.md](../GUIDE.md)):
+```bash
+claude --plugin-dir C:\project\teo_sprint\ddalkak
+```
+로드 확인: `/mcp`(figma 연결 여부) → `/ddalkak` 까지 타이핑하면 자동완성에 `ddalkak:bridge` 등 스킬들이 떠야 한다. 파일 수정 후엔 `/reload-plugins`.
 
 ## 미리 주입된 상태
 `design.md`(React 웹 컨벤션) + `.ddalkak/`에 bridge·plan·config가 시드되어 있고,

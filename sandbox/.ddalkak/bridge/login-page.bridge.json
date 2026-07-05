@@ -2,8 +2,9 @@
   "meta": {
     "figmaUrl": "https://www.figma.com/design/MOCK0000000000/ddalkak-sample?node-id=1-2",
     "mode": "section",
-    "extractedAt": "2026-07-05T12:00:00+09:00",
-    "schemaVersion": "1.1"
+    "schemaVersion": "2.0",
+    "fidelity": "lossless",
+    "extractedAt": "2026-07-05T12:00:00+09:00"
   },
   "tokens": {
     "color": {
@@ -17,112 +18,187 @@
       "error": "#EF4444"
     },
     "type": {
-      "heading-lg": { "size": 28, "weight": 700, "lineHeight": 1.3 },
-      "body-md": { "size": 16, "weight": 400, "lineHeight": 1.5 },
-      "label-sm": { "size": 14, "weight": 500, "lineHeight": 1.4 }
+      "heading-lg": { "family": "Pretendard", "size": 28, "weight": 700, "lineHeight": 1.3 },
+      "body-md":    { "family": "Pretendard", "size": 16, "weight": 400, "lineHeight": 1.5 },
+      "label-sm":   { "family": "Pretendard", "size": 14, "weight": 500, "lineHeight": 1.4 }
     },
-    "spacing": {
-      "xs": 4,
-      "sm": 8,
-      "md": 16,
-      "lg": 24,
-      "xl": 40
+    "spacing": { "xs": 4, "sm": 8, "md": 16, "lg": 24, "xl": 40 },
+    "radius":  { "sm": 8, "md": 12 },
+    "effect":  {
+      "card": { "type": "drop-shadow", "color": "rgba(0,0,0,0.06)", "offset": [0, 4], "radius": 12, "spread": 0 }
     }
   },
   "screens": [
     {
       "name": "login-page",
+      "breakpoint": "desktop",
+      "variantGroup": "login",
       "frame": { "w": 1440, "h": 900 },
+      "screenshot": "shot-login-desktop",
+      "reconciliation": { "status": "match", "discrepancies": [] },
       "nodes": [
         {
-          "type": "group",
-          "layout": "column",
-          "gap": 24,
-          "bbox": [520, 180, 400, 540],
-          "style": {
-            "background": "surface",
-            "borderRadius": 12,
-            "padding": 40,
-            "shadow": "0 4px 12px rgba(0,0,0,0.06)"
+          "type": "frame",
+          "name": "LoginCard",
+          "layout": {
+            "mode": "column",
+            "padding": [40, 40, 40, 40],
+            "gap": "@spacing.lg",
+            "primaryAxisAlign": "start",
+            "counterAxisAlign": "stretch",
+            "sizing": { "horizontal": "fixed", "vertical": "hug" }
           },
+          "constraints": { "horizontal": "center", "vertical": "center" },
+          "style": {
+            "fills": [{ "type": "solid", "color": "@color.surface" }],
+            "cornerRadius": "@radius.md",
+            "effects": ["@effect.card"]
+          },
+          "bbox": [520, 180, 400, 540],
           "children": [
             {
-              "type": "image",
+              "type": "vector",
+              "name": "logo",
               "ref": "asset-logo",
               "bbox": [0, 0, 48, 48]
             },
             {
               "type": "text",
+              "name": "title",
               "content": "다시 만나서 반가워요",
-              "style": { "token": "heading-lg", "color": "text-strong" },
+              "style": { "font": "@type.heading-lg", "fills": [{ "type": "solid", "color": "@color.text-strong" }] },
               "bbox": [0, 72, 320, 36]
             },
             {
               "type": "text",
+              "name": "subtitle",
               "content": "계정에 로그인하고 계속하세요",
-              "style": { "token": "body-md", "color": "text-muted" },
+              "style": { "font": "@type.body-md", "fills": [{ "type": "solid", "color": "@color.text-muted" }] },
               "bbox": [0, 112, 320, 24]
             },
             {
-              "type": "component",
-              "ref": "TextField",
+              "type": "instance",
+              "name": "email-field",
+              "componentName": "TextField/Default",
+              "isDesignSystemComponent": true,
+              "mappedCodeComponent": "src/components/TextField",
+              "componentProps": { "type": "email", "label": "이메일" },
               "content": "이메일",
-              "layout": "column",
-              "gap": 8,
-              "style": { "border": "border", "borderRadius": 8, "height": 48 },
-              "bbox": [0, 168, 320, 76],
-              "componentName": "TextField/Default",
-              "isDesignSystemComponent": true,
-              "mappedCodeComponent": "src/components/TextField",
-              "componentProps": { "type": "email" }
-            },
-            {
-              "type": "component",
-              "ref": "TextField",
-              "content": "비밀번호",
-              "layout": "column",
-              "gap": 8,
-              "style": { "border": "border", "borderRadius": 8, "height": 48, "inputType": "password" },
-              "bbox": [0, 260, 320, 76],
-              "componentName": "TextField/Default",
-              "isDesignSystemComponent": true,
-              "mappedCodeComponent": "src/components/TextField",
-              "componentProps": { "type": "password" }
-            },
-            {
-              "type": "component",
-              "ref": "Button",
-              "content": "로그인",
+              "layout": { "mode": "column", "gap": "@spacing.sm", "sizing": { "horizontal": "fill", "vertical": "hug" } },
+              "constraints": { "horizontal": "left-right" },
               "style": {
-                "background": "primary",
-                "color": "surface",
-                "borderRadius": 8,
-                "height": 48,
-                "token": "label-sm"
+                "strokes": [{ "color": "@color.border", "weight": 1, "align": "inside" }],
+                "cornerRadius": "@radius.sm"
               },
-              "bbox": [0, 368, 320, 48],
+              "bbox": [0, 168, 320, 76]
+            },
+            {
+              "type": "instance",
+              "name": "password-field",
+              "componentName": "TextField/Default",
+              "isDesignSystemComponent": true,
+              "mappedCodeComponent": "src/components/TextField",
+              "componentProps": { "type": "password", "label": "비밀번호" },
+              "content": "비밀번호",
+              "layout": { "mode": "column", "gap": "@spacing.sm", "sizing": { "horizontal": "fill", "vertical": "hug" } },
+              "constraints": { "horizontal": "left-right" },
+              "style": {
+                "strokes": [{ "color": "@color.border", "weight": 1, "align": "inside" }],
+                "cornerRadius": "@radius.sm"
+              },
+              "bbox": [0, 260, 320, 76]
+            },
+            {
+              "type": "instance",
+              "name": "submit",
               "componentName": "Button/Primary",
               "isDesignSystemComponent": true,
               "mappedCodeComponent": "src/components/Button",
-              "componentProps": { "variant": "primary", "size": "md" }
+              "componentProps": { "variant": "primary", "size": "md" },
+              "content": "로그인",
+              "constraints": { "horizontal": "left-right" },
+              "style": {
+                "fills": [{ "type": "solid", "color": "@color.primary" }],
+                "cornerRadius": "@radius.sm",
+                "font": "@type.label-sm"
+              },
+              "bbox": [0, 368, 320, 48]
             },
             {
-              "type": "group",
-              "layout": "row",
-              "gap": 4,
-              "bbox": [60, 440, 200, 20],
-              "children": [
-                {
-                  "type": "text",
-                  "content": "아직 계정이 없나요?",
-                  "style": { "token": "label-sm", "color": "text-muted" }
-                },
-                {
-                  "type": "text",
-                  "content": "회원가입",
-                  "style": { "token": "label-sm", "color": "primary", "role": "link" }
-                }
-              ]
+              "type": "text",
+              "name": "signup-row",
+              "content": "아직 계정이 없나요? 회원가입",
+              "runs": [
+                { "text": "아직 계정이 없나요? ", "style": { "font": "@type.label-sm", "fills": [{ "type": "solid", "color": "@color.text-muted" }] } },
+                { "text": "회원가입", "style": { "font": "@type.label-sm", "fills": [{ "type": "solid", "color": "@color.primary" }], "textDecoration": "none" } }
+              ],
+              "bbox": [60, 440, 200, 20]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "login-page",
+      "breakpoint": "mobile",
+      "variantGroup": "login",
+      "frame": { "w": 375, "h": 812 },
+      "screenshot": "shot-login-mobile",
+      "reconciliation": { "status": "match", "discrepancies": [] },
+      "nodes": [
+        {
+          "type": "frame",
+          "name": "LoginCard",
+          "layout": {
+            "mode": "column",
+            "padding": ["@spacing.lg", "@spacing.lg", "@spacing.lg", "@spacing.lg"],
+            "gap": "@spacing.md",
+            "primaryAxisAlign": "start",
+            "counterAxisAlign": "stretch",
+            "sizing": { "horizontal": "fill", "vertical": "hug" }
+          },
+          "constraints": { "horizontal": "left-right", "vertical": "top" },
+          "style": {
+            "fills": [{ "type": "solid", "color": "@color.surface" }],
+            "cornerRadius": 0
+          },
+          "bbox": [0, 0, 375, 640],
+          "children": [
+            {
+              "type": "vector",
+              "name": "logo",
+              "ref": "asset-logo",
+              "bbox": [0, 0, 40, 40]
+            },
+            {
+              "type": "text",
+              "name": "title",
+              "content": "다시 만나서 반가워요",
+              "style": { "font": "@type.heading-lg", "fills": [{ "type": "solid", "color": "@color.text-strong" }] },
+              "bbox": [0, 56, 327, 36]
+            },
+            {
+              "type": "instance",
+              "name": "email-field",
+              "componentName": "TextField/Default",
+              "isDesignSystemComponent": true,
+              "mappedCodeComponent": "src/components/TextField",
+              "componentProps": { "type": "email", "label": "이메일" },
+              "content": "이메일",
+              "layout": { "mode": "column", "gap": "@spacing.sm", "sizing": { "horizontal": "fill", "vertical": "hug" } },
+              "constraints": { "horizontal": "left-right" },
+              "bbox": [0, 128, 327, 76]
+            },
+            {
+              "type": "instance",
+              "name": "submit",
+              "componentName": "Button/Primary",
+              "isDesignSystemComponent": true,
+              "mappedCodeComponent": "src/components/Button",
+              "componentProps": { "variant": "primary", "size": "md" },
+              "content": "로그인",
+              "constraints": { "horizontal": "left-right" },
+              "bbox": [0, 300, 327, 48]
             }
           ]
         }
@@ -130,9 +206,8 @@
     }
   ],
   "assets": [
-    {
-      "id": "asset-logo",
-      "export": ".ddalkak/assets/login-page/logo.svg"
-    }
+    { "id": "asset-logo",         "kind": "vector",     "export": ".ddalkak/assets/login-page/logo.svg", "format": "svg" },
+    { "id": "shot-login-desktop", "kind": "screenshot", "export": ".ddalkak/assets/login-page/desktop.png", "format": "png" },
+    { "id": "shot-login-mobile",  "kind": "screenshot", "export": ".ddalkak/assets/login-page/mobile.png", "format": "png" }
   ]
 }

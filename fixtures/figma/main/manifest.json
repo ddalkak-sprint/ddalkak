@@ -1,0 +1,27 @@
+{
+  "$comment": "MCP capture manifest for the 딸깍 목업 [PC] / landing frame. calls[] maps each file to the tool/node that produced it → enables --source cache replay.",
+  "source": {
+    "figmaUrl": "https://www.figma.com/design/5If4sXvCThGCdlvVJmxgUZ/딸깍-목업?node-id=9-565",
+    "fileKey": "5If4sXvCThGCdlvVJmxgUZ",
+    "page": "딸깍 목업",
+    "mode": "section"
+  },
+  "capturedAt": "2026-07-05",
+  "sections": [
+    { "name": "[PC] /", "slug": "pc-home", "nodeId": "9:565" }
+  ],
+  "calls": [
+    { "tool": "whoami",             "scope": "auth",             "args": {},                                             "file": "whoami.json" },
+    { "tool": "get_metadata",       "scope": "section:pc-home",  "args": { "fileKey": "5If4sXvCThGCdlvVJmxgUZ", "nodeId": "9:565" }, "file": "get_metadata.json" },
+    { "tool": "get_variable_defs",  "scope": "section:pc-home",  "args": { "fileKey": "5If4sXvCThGCdlvVJmxgUZ", "nodeId": "9:565" }, "file": "get_variable_defs.json" },
+    { "tool": "get_design_context", "scope": "section:pc-home",  "args": { "fileKey": "5If4sXvCThGCdlvVJmxgUZ", "nodeId": "9:565" }, "file": "sections/pc-home/get_design_context.json" },
+    { "tool": "get_code_connect_map","scope": "section:pc-home", "args": { "fileKey": "5If4sXvCThGCdlvVJmxgUZ", "nodeId": "9:565" }, "file": "get_code_connect_map.json", "status": "unavailable" },
+    { "tool": "get_screenshot",     "scope": "section:pc-home",  "args": { "fileKey": "5If4sXvCThGCdlvVJmxgUZ", "nodeId": "9:565", "maxDimension": 1920 }, "file": "sections/pc-home/screenshot.png" },
+    { "tool": "download_assets",    "scope": "asset:img_avatar",      "args": { "url": "https://www.figma.com/api/mcp/asset/8dd5977b-bfd3-4500-b4a4-e8f9677d9baf" }, "file": "sections/pc-home/assets/img_avatar.png" },
+    { "tool": "download_assets",    "scope": "asset:image_54",        "args": { "url": "https://www.figma.com/api/mcp/asset/7672a700-51c5-4d96-93e7-c28254b9eff4" }, "file": "sections/pc-home/assets/image_54.png" },
+    { "tool": "download_assets",    "scope": "asset:group_25",        "args": { "url": "https://www.figma.com/api/mcp/asset/b94ea873-fadd-417e-9edc-70850be4b7bb" }, "file": "sections/pc-home/assets/group_25.svg" },
+    { "tool": "download_assets",    "scope": "asset:ic_arrow_right",  "args": { "url": "https://www.figma.com/api/mcp/asset/93c2c098-edcf-4ea9-b4aa-e8a4d1735e13" }, "file": "sections/pc-home/assets/ic_arrow_right.svg" },
+    { "tool": "download_assets",    "scope": "asset:emoji_add_icon",  "args": { "url": "https://www.figma.com/api/mcp/asset/0dc4e532-f9b3-4e89-9910-9af5eb038aa5" }, "file": "sections/pc-home/assets/emoji_add_icon.svg" },
+    { "tool": "download_assets",    "scope": "asset:logo_icon_color", "args": { "url": "https://www.figma.com/api/mcp/asset/6274b6f3-a62e-4766-ad17-de78195eb826" }, "file": "sections/pc-home/assets/logo_icon_color.svg" }
+  ]
+}
