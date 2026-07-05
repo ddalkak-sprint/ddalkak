@@ -1,0 +1,11 @@
+{
+  "name": "ddalkak-marketplace",
+  "owner": { "name": "HAMA / teo_sprint" },
+  "plugins": [
+    {
+      "name": "ddalkak",
+      "source": "./",
+      "description": "Figma → 코드 파이프라인 플러그인 (design.md → bridge → plan → code → verify)"
+    }
+  ]
+}
