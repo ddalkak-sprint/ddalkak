@@ -12,7 +12,8 @@
       "properties": {
         "figmaUrl": { "type": "string" },
         "mode": { "enum": ["section", "page"] },
-        "extractedAt": { "type": "string" }
+        "extractedAt": { "type": "string" },
+        "schemaVersion": { "type": "string", "description": "예: '1.1'. 없으면 '1.0'으로 취급." }
       }
     },
     "tokens": {
@@ -31,7 +32,9 @@
         "properties": {
           "name":  { "type": "string" },
           "frame": { "type": "object", "properties": { "w": { "type": "number" }, "h": { "type": "number" } } },
-          "nodes": { "type": "array", "items": { "$ref": "#/$defs/node" } }
+          "nodes": { "type": "array", "items": { "$ref": "#/$defs/node" } },
+          "breakpoint":   { "enum": ["mobile", "tablet", "desktop", "default"], "description": "반응형 그룹의 일부일 때만 채움. figma-extraction-rules.md §5" },
+          "variantGroup": { "type": "string", "description": "같은 논리 화면의 breakpoint들을 묶는 이름. figma-extraction-rules.md §5" }
         }
       }
     },
@@ -58,7 +61,11 @@
         "gap":      { "type": "number" },
         "style":    { "type": "object" },
         "bbox":     { "type": "array", "items": { "type": "number" } },
-        "children": { "type": "array", "items": { "$ref": "#/$defs/node" } }
+        "children": { "type": "array", "items": { "$ref": "#/$defs/node" } },
+        "componentName":           { "type": "string", "description": "type=component일 때만. Figma 메인 컴포넌트 이름. figma-extraction-rules.md §3" },
+        "isDesignSystemComponent": { "type": "boolean", "description": "true면 재사용, false/누락이면 code 단계가 신규 생성" },
+        "mappedCodeComponent":     { "type": ["string", "null"], "description": "Code Connect 또는 design.md 규칙으로 매핑된 코드 컴포넌트 경로" },
+        "componentProps":          { "type": "object", "description": "인스턴스의 variant/property 값" }
       }
     }
   }
