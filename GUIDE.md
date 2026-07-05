@@ -30,6 +30,22 @@ Claude Code 안에서:
 /plugin install ddalkak@ddalkak-marketplace
 ```
 
+**빠르게 반복 개발할 때(추천)** — SKILL.md/agents를 자주 고칠 거면 마켓플레이스 add/install 대신
+아예 세션을 이 옵션으로 켠다. 재설치 없이 즉시 반영된다:
+```bash
+claude --plugin-dir C:\project\teo_sprint\ddalkak    # sandbox에서 이 옵션으로 실행
+```
+스킬/서브에이전트 파일을 고친 뒤에는 재시작 없이:
+```
+/reload-plugins
+```
+
+**로드 확인:**
+```
+/mcp     # figma가 Connected인지 확인 (bridge 작업자는 필수)
+/ddalkak 까지 타이핑 → 자동완성에 ddalkak:bridge / ddalkak:plan / ddalkak:code / ddalkak:verify / ddalkak:finalize / ddalkak:design-md 가 뜨는지 확인
+```
+
 ---
 
 ## 닉 · 초록 — [1] bridge
@@ -42,11 +58,18 @@ Claude Code 안에서:
 | 출력 스펙 | `shared/bridge.schema.json` (SSOT) |
 | 기대 결과 예시 | `shared/examples/login-page.bridge.json` — **이런 모양이 나오면 성공** |
 
-**테스트:** sandbox에서 `/ddalkak:bridge <figma-url>` 실행 →
-`node ../scripts/validate-bridge.mjs .ddalkak/bridge/<name>.bridge.json` 통과 확인.
-Figma MCP 연결: `claude mcp add --transport http figma https://mcp.figma.com/mcp`
+**MCP 호출 절약 (중요 — 호출 한도 있음):** 라이브 호출을 매번 하면 한도가 금방 소진된다.
+**한 번만 정성껏 캡처 → 캐시 재생**으로 개발한다 (rules §10, `fixtures/figma/README.md`):
+1. Figma MCP 연결: `claude mcp add --transport http figma https://mcp.figma.com/mcp` → 세션 재시작 → `/mcp`로 인증
+2. 골든 캡처(호출 소모): `/ddalkak:bridge <page-url> --source live --cacheDir fixtures/figma/<name>`
+   → 모든 원시 응답이 캐시에 기록됨. `node scripts/mcp-cache.mjs check fixtures/figma/<name>`로 완결 확인
+3. 이후 개발은 **호출 0회**: `/ddalkak:bridge <page-url> --source cache --cacheDir fixtures/figma/<name>`
 
-**완료 기준:** 실제 Figma URL 하나로 스키마 통과하는 브릿지가 나온다.
+**테스트:** 재생으로 나온 `.ddalkak/bridge/<name>.bridge.json`을
+`node scripts/validate-bridge.mjs <path>`로 검증 (미해결 `@ref`=무손실 위반).
+기대 모양은 `shared/examples/login-page.bridge.json`(v2.0).
+
+**완료 기준:** 캐시된 실물 응답으로 스키마 통과 + 스크린샷 교차검증(§8)까지 되는 브릿지가 나온다.
 
 ---
 
