@@ -1,0 +1,138 @@
+{
+  "meta": {
+    "figmaUrl": "https://www.figma.com/design/MOCK0000000000/ddalkak-sample?node-id=1-2",
+    "mode": "section",
+    "extractedAt": "2026-07-05T12:00:00+09:00",
+    "schemaVersion": "1.1"
+  },
+  "tokens": {
+    "color": {
+      "primary": "#3B82F6",
+      "primary-hover": "#2563EB",
+      "text-strong": "#111827",
+      "text-muted": "#6B7280",
+      "border": "#E5E7EB",
+      "surface": "#FFFFFF",
+      "background": "#F9FAFB",
+      "error": "#EF4444"
+    },
+    "type": {
+      "heading-lg": { "size": 28, "weight": 700, "lineHeight": 1.3 },
+      "body-md": { "size": 16, "weight": 400, "lineHeight": 1.5 },
+      "label-sm": { "size": 14, "weight": 500, "lineHeight": 1.4 }
+    },
+    "spacing": {
+      "xs": 4,
+      "sm": 8,
+      "md": 16,
+      "lg": 24,
+      "xl": 40
+    }
+  },
+  "screens": [
+    {
+      "name": "login-page",
+      "frame": { "w": 1440, "h": 900 },
+      "nodes": [
+        {
+          "type": "group",
+          "layout": "column",
+          "gap": 24,
+          "bbox": [520, 180, 400, 540],
+          "style": {
+            "background": "surface",
+            "borderRadius": 12,
+            "padding": 40,
+            "shadow": "0 4px 12px rgba(0,0,0,0.06)"
+          },
+          "children": [
+            {
+              "type": "image",
+              "ref": "asset-logo",
+              "bbox": [0, 0, 48, 48]
+            },
+            {
+              "type": "text",
+              "content": "다시 만나서 반가워요",
+              "style": { "token": "heading-lg", "color": "text-strong" },
+              "bbox": [0, 72, 320, 36]
+            },
+            {
+              "type": "text",
+              "content": "계정에 로그인하고 계속하세요",
+              "style": { "token": "body-md", "color": "text-muted" },
+              "bbox": [0, 112, 320, 24]
+            },
+            {
+              "type": "component",
+              "ref": "TextField",
+              "content": "이메일",
+              "layout": "column",
+              "gap": 8,
+              "style": { "border": "border", "borderRadius": 8, "height": 48 },
+              "bbox": [0, 168, 320, 76],
+              "componentName": "TextField/Default",
+              "isDesignSystemComponent": true,
+              "mappedCodeComponent": "src/components/TextField",
+              "componentProps": { "type": "email" }
+            },
+            {
+              "type": "component",
+              "ref": "TextField",
+              "content": "비밀번호",
+              "layout": "column",
+              "gap": 8,
+              "style": { "border": "border", "borderRadius": 8, "height": 48, "inputType": "password" },
+              "bbox": [0, 260, 320, 76],
+              "componentName": "TextField/Default",
+              "isDesignSystemComponent": true,
+              "mappedCodeComponent": "src/components/TextField",
+              "componentProps": { "type": "password" }
+            },
+            {
+              "type": "component",
+              "ref": "Button",
+              "content": "로그인",
+              "style": {
+                "background": "primary",
+                "color": "surface",
+                "borderRadius": 8,
+                "height": 48,
+                "token": "label-sm"
+              },
+              "bbox": [0, 368, 320, 48],
+              "componentName": "Button/Primary",
+              "isDesignSystemComponent": true,
+              "mappedCodeComponent": "src/components/Button",
+              "componentProps": { "variant": "primary", "size": "md" }
+            },
+            {
+              "type": "group",
+              "layout": "row",
+              "gap": 4,
+              "bbox": [60, 440, 200, 20],
+              "children": [
+                {
+                  "type": "text",
+                  "content": "아직 계정이 없나요?",
+                  "style": { "token": "label-sm", "color": "text-muted" }
+                },
+                {
+                  "type": "text",
+                  "content": "회원가입",
+                  "style": { "token": "label-sm", "color": "primary", "role": "link" }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "assets": [
+    {
+      "id": "asset-logo",
+      "export": ".ddalkak/assets/login-page/logo.svg"
+    }
+  ]
+}

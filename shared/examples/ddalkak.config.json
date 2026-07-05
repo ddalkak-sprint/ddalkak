@@ -1,0 +1,14 @@
+{
+  "figmaUrl": "https://www.figma.com/design/MOCK0000000000/ddalkak-sample?node-id=1-2",
+  "mode": "section",
+  "name": "login-page",
+  "stages": {
+    "design-md": "done",
+    "bridge": "done",
+    "plan": "done",
+    "code": "done",
+    "verify": "done",
+    "finalize": "pending"
+  },
+  "updatedAt": "2026-07-05T12:30:00+09:00"
+}
