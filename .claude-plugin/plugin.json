@@ -1,0 +1,8 @@
+{
+  "name": "ddalkak",
+  "displayName": "딸깍 (ddalkak)",
+  "version": "0.0.1",
+  "description": "Figma URL을 한 번에(딸깍) 코드로 뽑아내는 디자인→코드 파이프라인. design.md → 디자인 브릿지(JSON) → plan.md → code → 검증.",
+  "author": { "name": "HAMA / teo_sprint" },
+  "keywords": ["figma", "design-to-code", "pipeline", "design-bridge", "mcp"]
+}
