@@ -9,6 +9,7 @@
 | `login-page.plan.md` | plan 단계 출력 | 퓨리 | 퓨리(code 입력) |
 | `login-page.verify.md` | verify 단계 출력 리포트 | 글랜·렉스 | 글랜·렉스(finalize 입력) |
 | `ddalkak.config.json` | 오케스트레이터 상태 파일 | — | 전원 |
+| `assets/login-page/*.png` | verify 단계 baseline screenshot | 글랜·렉스 | visual verify 엔진 |
 
 ## 사용 규칙
 - 담당 단계의 **출력 포맷을 바꾸면 여기 예시도 같이 갱신**한다. (예시 = 계약의 살아있는 스펙)
