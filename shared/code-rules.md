@@ -18,29 +18,41 @@
 - "신규"는 새로 만들고, "수정"은 기존 파일을 읽어 필요한 부분만 바꾼다(전체 덮어쓰기 금지).
 - "구현 순서"를 그대로 따른다: 토큰/설정 → 잎 컴포넌트 → 상위·페이지 조립 → 에셋 → 레이아웃 확인.
 
-## 3. 컴포넌트 재사용(import) vs 신규 생성
+## 3. 컴포넌트 재사용(import) vs 수정 vs 신규 생성
 - plan이 "재사용"으로 표기했거나 대상 경로(`mappedCodeComponent`)에 컴포넌트가 **이미 존재**하면 → 새로 만들지 말고 import한다.
 - plan이 "신규"로 표기한 컴포넌트만 그 경로에 작성한다. `mappedCodeComponent`가 있어도 그 파일이 없으면 신규 생성이 정상이다(그린필드).
+- plan이 "수정"으로 표기한 컴포넌트는 기존 파일을 읽고 **기존 props와 사용처의 하위호환을 유지**하며
+  확장한다(기존 props 기본값 보존). 수정 후 기존 사용처가 깨지지 않는지 빌드로 확인한다(§9).
 - 이미 존재하는 파일은 덮어쓰지 말고 재사용한다.
 
 ## 4. 토큰 → 스타일 매핑
-- plan의 "디자인 토큰 매핑" 표를 그대로 구현한다.
+- plan의 "디자인 토큰 매핑" 표를 그대로 구현한다(스코프 접미사 등 충돌 처리 포함 — plan-rules §4-1).
   - Tailwind 베이스: color/type 토큰을 `tailwind.config.js` `theme.extend`(colors/fontSize)에 등록한 뒤
-    유틸 클래스(`bg-primary`, `text-heading-lg`)로 사용. spacing은 기본 스케일 또는 px 임의값(`gap-[24px]`).
+    유틸 클래스(`bg-primary`, `text-heading-lg`)로 사용.
   - 다른 스택이면 design.md가 지정한 방식(CSS 변수/테마 객체)으로 등록·참조.
+- **수치는 절대 근사하지 않는다.** 브릿지의 px 값이 Tailwind 기본 스케일과 **정확히 일치할 때만**
+  스케일 클래스(48px→`h-12`, 24px→`gap-6`)를 쓰고, 일치하지 않으면 반드시 임의값(`gap-[30px]`, `w-[205px]`)으로 구현한다.
+  스펙에 없는 "가까운 값"으로 옮기는 것이 verify 불일치의 주요 원인이다.
 - 브릿지 노드 `style`에 raw 값으로 남은 일회성 값은 해당 요소에만 인라인/임의값으로 적용하고 토큰으로 승격하지 않는다.
+  단 raw 값이 등록된 토큰과 동일값이면 토큰 클래스를 쓴다.
 
 ## 5. 노드/레이아웃 → JSX
 plan-rules §2 매핑을 코드로 구현한다.
-- `group` → flex 컨테이너. `layout: column`→`flex-col`, `row`→`flex-row`, `gap`→`gap-*`, `style`(background/padding/radius/shadow)→클래스.
-- `text` → 텍스트 요소. `content`를 그대로 넣고 `style.token`(타이포)·`style.color`를 클래스로. `style.role: "link"`면 `<a>`.
-- `image` + `ref` → `assets[]`에서 배치한 파일을 import 해 `<img>`로. 크기는 bbox의 w/h 참조.
+- `frame`/`group` → flex 컨테이너. `layout: column`→`flex-col`, `row`→`flex-row`, `gap`→`gap-*`,
+  `padding`→`p*`, `primaryAxisAlign`/`counterAxisAlign`→`justify-*`/`items-*`, `style`(background/radius/shadow)→클래스.
+- `text` → 텍스트 요소. `content`를 그대로 넣고 `style.token`(타이포)·`style.color`를 클래스로.
+  `runs[]`가 있으면 run별 `<span>`으로 분할해 서식(굵기 등)을 구현. `style.role: "link"`면 `<a>`.
+- `image`/`vector` + `ref` → `assets[]`에서 배치한 파일을 import 해 `<img>`로. 크기는 bbox의 w/h 참조.
+- `line` → 부모의 `border-*` 또는 `<hr>`. `shape`/`ellipse` → 스타일된 `div`(ellipse는 `rounded-full`).
 - `bbox`는 **참조값**이다. 절대좌표(`position: absolute`, `top/left`)로 옮기지 말고 부모 흐름 레이아웃으로 구현한다.
   단 폭 등 명시가 필요한 값(카드 400px 등)은 클래스로 지정한다.
+- 예외: plan이 "일러스트 절대배치"로 명시한 영역(plan-rules §2-1)은 relative 컨테이너 + absolute 자식으로
+  bbox 좌표를 그대로 구현한다. semanticRole이 있으면 시맨틱 태그로 구현한다(plan-rules §2-2).
 
 ## 6. 에셋 배치
 - 브릿지 `assets[]`의 export 파일(`.ddalkak/assets/<name>/...`)을 plan이 지정한 프로젝트 경로(기본 `src/assets/<name>/`)로 복사·배치하고,
   이를 사용하는 컴포넌트에서 import 한다.
+- `kind: "screenshot"` 에셋은 verify 전용 — 프로젝트로 복사하지 않는다.
 
 ## 7. 컴포넌트 작성 규칙 (design.md 4장 기본 베이스)
 - props는 `interface <Component>Props`로 명시. `any` 금지.
@@ -53,9 +65,12 @@ plan-rules §2 매핑을 코드로 구현한다.
   컴포넌트 단위·스타일 적용 방식·파일 확장자·라우팅을 해당 스택에 맞춘다.
 - 어느 스택이든 공통 원칙은 동일: plan 파일 계획 준수, 토큰 매핑 구현, 재사용 우선, 범위 제한.
 
-## 9. 생성 후 보고
-구현을 마치면 사용자에게 요약한다:
-- 생성/수정한 파일 목록(경로 + 신규·수정).
-- plan 대비 벗어난 점이 있으면 그 사유(예: 기존 파일과 충돌해 통합).
-- 렌더/빌드 확인 방법 안내(예: `npm run dev`). 가능하면 타입 체크·빌드가 통과하는지 확인해 결과를 함께 보고한다.
-- 다음 단계는 verify(code ↔ figma 대조)임을 안내.
+## 9. 빌드 검증 & 생성 후 보고
+- **타입 체크·빌드는 필수다.** 구현을 마치면 반드시 빌드(예: `npm run build`)를 실행한다.
+  실패하면 원인을 수정하고 재시도한다(최대 3회). 3회 후에도 실패하면 실패 상태와 원인을 그대로 보고한다
+  — 통과한 척 넘어가지 않는다.
+- 이후 사용자에게 요약한다:
+  - 생성/수정한 파일 목록(경로 + 신규·수정)과 빌드 결과.
+  - plan 대비 벗어난 점이 있으면 그 사유(예: 기존 파일과 충돌해 통합).
+  - 렌더 확인 방법 안내(예: `npm run dev`).
+  - 다음 단계는 verify(code ↔ figma 대조)임을 안내.
