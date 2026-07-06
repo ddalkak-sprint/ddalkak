@@ -2,9 +2,9 @@
   "meta": {
     "figmaUrl": "https://www.figma.com/design/5If4sXvCThGCdlvVJmxgUZ/딸깍-목업?node-id=9-565",
     "mode": "section",
-    "schemaVersion": "2.0",
+    "schemaVersion": "2.1",
     "fidelity": "lossless",
-    "extractedAt": "2026-07-05"
+    "extractedAt": "2026-07-06"
   },
   "tokens": {
     "color": {
@@ -44,7 +44,8 @@
           {
             "kind": "missing-node",
             "detail": "get_metadata exposed instances 9:571 (img_01) and 9:579 (img_02) as leaf instances with no children. Screenshot shows they are composed illustrations (preview message cards / emoji reaction widget). Re-extracted their internal composition from get_design_context and expanded them as instance subtrees.",
-            "resolved": true
+            "resolved": true,
+            "resolution": "re-extract"
           }
         ]
       },
@@ -65,6 +66,7 @@
               "componentName": "header",
               "isDesignSystemComponent": false,
               "mappedCodeComponent": null,
+              "semanticRole": "nav",
               "constraints": { "horizontal": "left-right", "vertical": "top" },
               "layout": { "mode": "none" },
               "bbox": [0, 0, 1920, 64],
@@ -86,6 +88,7 @@
                     {
                       "type": "group",
                       "name": "logo",
+                      "semanticRole": "logo",
                       "layout": { "mode": "row", "gap": 8, "counterAxisAlign": "center", "sizing": { "horizontal": "hug", "vertical": "hug" } },
                       "bbox": [0, 0, 106, 30],
                       "children": [
@@ -93,17 +96,17 @@
                           "type": "vector",
                           "name": "🎨 Icon Color",
                           "ref": "asset-logo-icon",
-                          "bbox": [0, 1, 27.818, 27.658]
+                          "bbox": [0, 1, 28, 28]
                         },
                         {
                           "type": "text",
                           "name": "Rolling",
                           "content": "Rolling",
                           "style": {
-                            "font": { "family": "Poppins", "size": 19.971, "weight": 700, "lineHeight": "normal", "textAlign": "center" },
+                            "font": { "family": "Poppins", "size": 20, "weight": 700, "lineHeight": "normal", "textAlign": "center" },
                             "fills": [{ "type": "solid", "color": "@color.gray-90" }]
                           },
-                          "bbox": [35.818, 0, 70, 30]
+                          "bbox": [36, 0, 70, 30]
                         }
                       ]
                     },
@@ -171,6 +174,7 @@
                 {
                   "type": "frame",
                   "name": "img_01",
+                  "semanticRole": "feature",
                   "layout": { "mode": "none" },
                   "style": {
                     "fills": [{ "type": "solid", "color": "@color.surface" }],
@@ -181,6 +185,12 @@
                     {
                       "type": "frame",
                       "name": "Frame 2509",
+                      "suggestedComponent": "FeaturePoint",
+                      "suggestedProps": {
+                        "point": "Point. 01",
+                        "heading": "누구나 손쉽게, 온라인 롤링 페이퍼를 만들 수 있어요",
+                        "subtitle": "로그인 없이 자유롭게 만들어요."
+                      },
                       "layout": {
                         "mode": "column",
                         "gap": 16,
@@ -193,6 +203,7 @@
                         {
                           "type": "frame",
                           "name": "Frame 2508 (Point badge)",
+                          "semanticRole": "badge",
                           "layout": {
                             "mode": "column",
                             "padding": [6, 12, 6, 12],
@@ -260,116 +271,138 @@
                       "componentName": "img_01",
                       "isDesignSystemComponent": false,
                       "mappedCodeComponent": null,
+                      "semanticRole": "card-list",
                       "layout": { "mode": "none" },
                       "bbox": [480, 60, 720, 204],
                       "children": [
                         {
                           "type": "frame",
                           "name": "message-card-1",
+                          "semanticRole": "card",
+                          "suggestedComponent": "MessageCard",
+                          "suggestedProps": {
+                            "from": "박대영",
+                            "tag": "동료",
+                            "tagColor": "@color.purple-200",
+                            "message": "일교차가 큰 시기입니다. 새벽에는 겨울, 한낮에는 여름, 아침저녁으로는 가을을 느껴보는 것도 좋을 것 같아요. 일교차가 큰 시기입니다. 새벽에는 겨울, 한낮에는 여름, 아침저녁으로는 가을을 느껴보는 것도 좋을 것 같아요. ",
+                            "date": "2023.07.08"
+                          },
                           "style": {
                             "fills": [{ "type": "solid", "color": "@color.white" }],
-                            "strokes": [{ "color": "#DBD9E9", "weight": 0.988, "align": "inside" }],
-                            "cornerRadius": 11.852,
-                            "effects": [{ "type": "drop-shadow", "color": "rgba(0,0,0,0.08)", "offset": [0, 1.975], "radius": 11.852, "spread": 0 }]
+                            "strokes": [{ "color": "#DBD9E9", "weight": 1, "align": "inside" }],
+                            "cornerRadius": 12,
+                            "effects": [{ "type": "drop-shadow", "color": "rgba(0,0,0,0.08)", "offset": [0, 2], "radius": 12, "spread": 0 }]
                           },
-                          "bbox": [257.29, 21.02, 205.432, 161.975],
+                          "bbox": [257, 21, 205, 162],
                           "children": [
-                            { "type": "image", "name": "avatar", "ref": "asset-img-avatar", "bbox": [12.03, 18.57, 31.605, 31.605] },
+                            { "type": "image", "name": "avatar", "ref": "asset-img-avatar", "semanticRole": "avatar", "bbox": [12, 19, 32, 32] },
                             {
                               "type": "text",
                               "name": "from-row",
                               "content": "From. 박대영",
                               "runs": [
-                                { "text": "From. ", "style": { "font": { "family": "Pretendard", "size": 11.852, "weight": 400, "lineHeight": 17.778, "letterSpacing": -0.0593 }, "fills": [{ "type": "solid", "color": "#000000" }] } },
-                                { "text": "박대영", "style": { "font": { "family": "Pretendard", "size": 11.852, "weight": 700, "lineHeight": 17.778, "letterSpacing": -0.0593 }, "fills": [{ "type": "solid", "color": "#000000" }] } }
+                                { "text": "From. ", "style": { "font": { "family": "Pretendard", "size": 12, "weight": 400, "lineHeight": 18, "letterSpacing": -0.1 }, "fills": [{ "type": "solid", "color": "#000000" }] } },
+                                { "text": "박대영", "style": { "font": { "family": "Pretendard", "size": 12, "weight": 700, "lineHeight": 18, "letterSpacing": -0.1 }, "fills": [{ "type": "solid", "color": "#000000" }] } }
                               ],
-                              "bbox": [51.39, 21, 60, 18]
+                              "bbox": [51, 21, 60, 18]
                             },
                             {
                               "type": "frame",
                               "name": "tag",
-                              "style": { "fills": [{ "type": "solid", "color": "@color.purple-200" }], "cornerRadius": 2.141 },
-                              "bbox": [51.39, 41, 30, 16],
+                              "semanticRole": "badge",
+                              "style": { "fills": [{ "type": "solid", "color": "@color.purple-200" }], "cornerRadius": 2 },
+                              "bbox": [51, 41, 30, 16],
                               "children": [
-                                { "type": "text", "name": "tag-label", "content": "동료", "style": { "font": { "family": "Pretendard", "size": 9.877, "weight": 400, "lineHeight": 13.827 }, "fills": [{ "type": "solid", "color": "@color.purple-700" }] }, "bbox": [5.35, 1, 20, 14] }
+                                { "type": "text", "name": "tag-label", "content": "동료", "style": { "font": { "family": "Pretendard", "size": 10, "weight": 400, "lineHeight": 14 }, "fills": [{ "type": "solid", "color": "@color.purple-700" }] }, "bbox": [5, 1, 20, 14] }
                               ]
                             },
                             {
                               "type": "text",
                               "name": "message",
                               "content": "일교차가 큰 시기입니다. 새벽에는 겨울, 한낮에는 여름, 아침저녁으로는 가을을 느껴보는 것도 좋을 것 같아요. 일교차가 큰 시기입니다. 새벽에는 겨울, 한낮에는 여름, 아침저녁으로는 가을을 느껴보는 것도 좋을 것 같아요. ",
-                              "style": { "font": { "family": "Pretendard", "size": 11.852, "weight": 400, "lineHeight": 17.778, "letterSpacing": -0.0593 }, "fills": [{ "type": "solid", "color": "#555555" }] },
-                              "bbox": [12.85, 72.1, 179.851, 53.527]
+                              "style": { "font": { "family": "Pretendard", "size": 12, "weight": 400, "lineHeight": 18, "letterSpacing": -0.1 }, "fills": [{ "type": "solid", "color": "#555555" }] },
+                              "bbox": [13, 72, 180, 54]
                             },
                             {
                               "type": "text",
                               "name": "date",
                               "content": "2023.07.08",
-                              "style": { "font": { "family": "Pretendard", "size": 9.877, "weight": 400, "lineHeight": 12.847 }, "fills": [{ "type": "solid", "color": "#777777" }] },
-                              "bbox": [12.85, 134.32, 60, 13]
+                              "style": { "font": { "family": "Pretendard", "size": 10, "weight": 400, "lineHeight": 13 }, "fills": [{ "type": "solid", "color": "#777777" }] },
+                              "bbox": [13, 134, 60, 13]
                             }
                           ]
                         },
                         {
                           "type": "frame",
                           "name": "message-card-2",
+                          "semanticRole": "card",
+                          "suggestedComponent": "MessageCard",
+                          "suggestedProps": {
+                            "from": "강미나",
+                            "tag": "친구",
+                            "tagColor": "#E2F5FF",
+                            "message": "코로나가 또다시 기승을 부리는 요즘이네요. 건강, 체력 모두 조심 또 하세요!",
+                            "date": "2023.07.08"
+                          },
                           "style": {
                             "fills": [{ "type": "solid", "color": "@color.white" }],
-                            "strokes": [{ "color": "#DBD9E9", "weight": 0.988, "align": "inside" }],
-                            "cornerRadius": 11.852,
-                            "effects": [{ "type": "drop-shadow", "color": "rgba(0,0,0,0.08)", "offset": [0, 1.975], "radius": 11.852, "spread": 0 }]
+                            "strokes": [{ "color": "#DBD9E9", "weight": 1, "align": "inside" }],
+                            "cornerRadius": 12,
+                            "effects": [{ "type": "drop-shadow", "color": "rgba(0,0,0,0.08)", "offset": [0, 2], "radius": 12, "spread": 0 }]
                           },
-                          "bbox": [40, 21.02, 205.432, 161.975],
+                          "bbox": [40, 21, 205, 162],
                           "children": [
-                            { "type": "image", "name": "avatar", "ref": "asset-img-avatar", "bbox": [12.03, 18.57, 31.605, 31.605] },
+                            { "type": "image", "name": "avatar", "ref": "asset-img-avatar", "semanticRole": "avatar", "bbox": [12, 19, 32, 32] },
                             {
                               "type": "text",
                               "name": "from-row",
                               "content": "From. 강미나",
                               "runs": [
-                                { "text": "From. ", "style": { "font": { "family": "Pretendard", "size": 11.852, "weight": 400, "lineHeight": 17.778, "letterSpacing": -0.0593 }, "fills": [{ "type": "solid", "color": "#000000" }] } },
-                                { "text": "강미나", "style": { "font": { "family": "Pretendard", "size": 11.852, "weight": 700, "lineHeight": 17.778, "letterSpacing": -0.0593 }, "fills": [{ "type": "solid", "color": "#000000" }] } }
+                                { "text": "From. ", "style": { "font": { "family": "Pretendard", "size": 12, "weight": 400, "lineHeight": 18, "letterSpacing": -0.1 }, "fills": [{ "type": "solid", "color": "#000000" }] } },
+                                { "text": "강미나", "style": { "font": { "family": "Pretendard", "size": 12, "weight": 700, "lineHeight": 18, "letterSpacing": -0.1 }, "fills": [{ "type": "solid", "color": "#000000" }] } }
                               ],
-                              "bbox": [51.39, 21, 60, 18]
+                              "bbox": [51, 21, 60, 18]
                             },
                             {
                               "type": "frame",
                               "name": "tag",
-                              "style": { "fills": [{ "type": "solid", "color": "#E2F5FF" }], "cornerRadius": 2.141 },
-                              "bbox": [51.39, 41, 30, 16],
+                              "semanticRole": "badge",
+                              "style": { "fills": [{ "type": "solid", "color": "#E2F5FF" }], "cornerRadius": 2 },
+                              "bbox": [51, 41, 30, 16],
                               "children": [
-                                { "type": "text", "name": "tag-label", "content": "친구", "style": { "font": { "family": "Pretendard", "size": 9.877, "weight": 400, "lineHeight": 13.827 }, "fills": [{ "type": "solid", "color": "#00A2FE" }] }, "bbox": [5.35, 1, 20, 14] }
+                                { "type": "text", "name": "tag-label", "content": "친구", "style": { "font": { "family": "Pretendard", "size": 10, "weight": 400, "lineHeight": 14 }, "fills": [{ "type": "solid", "color": "#00A2FE" }] }, "bbox": [5, 1, 20, 14] }
                               ]
                             },
                             {
                               "type": "text",
                               "name": "message",
                               "content": "코로나가 또다시 기승을 부리는 요즘이네요. 건강, 체력 모두 조심 또 하세요!",
-                              "style": { "font": { "family": "Pretendard", "size": 11.852, "weight": 400, "lineHeight": 17.778, "letterSpacing": -0.0593 }, "fills": [{ "type": "solid", "color": "#555555" }] },
-                              "bbox": [12.85, 72.1, 179.851, 53.527]
+                              "style": { "font": { "family": "Pretendard", "size": 12, "weight": 400, "lineHeight": 18, "letterSpacing": -0.1 }, "fills": [{ "type": "solid", "color": "#555555" }] },
+                              "bbox": [13, 72, 180, 54]
                             },
                             {
                               "type": "text",
                               "name": "date",
                               "content": "2023.07.08",
-                              "style": { "font": { "family": "Pretendard", "size": 9.877, "weight": 400, "lineHeight": 12.847 }, "fills": [{ "type": "solid", "color": "#777777" }] },
-                              "bbox": [12.85, 134.32, 60, 13]
+                              "style": { "font": { "family": "Pretendard", "size": 10, "weight": 400, "lineHeight": 13 }, "fills": [{ "type": "solid", "color": "#777777" }] },
+                              "bbox": [13, 134, 60, 13]
                             }
                           ]
                         },
                         {
                           "type": "frame",
                           "name": "add-card",
+                          "semanticRole": "card",
                           "style": {
                             "fills": [{ "type": "solid", "color": "@color.white" }],
-                            "strokes": [{ "color": "rgba(0,0,0,0.4)", "weight": 0.988, "align": "inside" }],
-                            "cornerRadius": 13.776,
-                            "effects": [{ "type": "drop-shadow", "color": "rgba(0,0,0,0.08)", "offset": [0, 1.975], "radius": 11.852, "spread": 0 }]
+                            "strokes": [{ "color": "rgba(0,0,0,0.4)", "weight": 1, "align": "inside" }],
+                            "cornerRadius": 14,
+                            "effects": [{ "type": "drop-shadow", "color": "rgba(0,0,0,0.08)", "offset": [0, 2], "radius": 12, "spread": 0 }]
                           },
-                          "bbox": [0, 21.02, 205.432, 161.975],
+                          "bbox": [0, 21, 205, 162],
                           "children": [
-                            { "type": "vector", "name": "Group 25 (plus)", "ref": "asset-group-25", "bbox": [84.09, 57.21, 37.591, 37.591] },
-                            { "type": "image", "name": "image 54 (cursor)", "ref": "asset-image-54", "bbox": [125.43, 63.21, 32.593, 32.593] }
+                            { "type": "vector", "name": "Group 25 (plus)", "ref": "asset-group-25", "bbox": [84, 57, 38, 38] },
+                            { "type": "image", "name": "image 54 (cursor)", "ref": "asset-image-54", "bbox": [125, 63, 33, 33] }
                           ]
                         }
                       ]
@@ -379,6 +412,7 @@
                 {
                   "type": "frame",
                   "name": "img_02",
+                  "semanticRole": "feature",
                   "layout": { "mode": "none" },
                   "style": {
                     "fills": [{ "type": "solid", "color": "@color.surface" }],
@@ -398,47 +432,54 @@
                         {
                           "type": "frame",
                           "name": "emoji-toolbar",
-                          "layout": { "mode": "row", "gap": 1.818, "counterAxisAlign": "start", "sizing": { "horizontal": "fixed", "vertical": "fixed" } },
-                          "bbox": [182.55, 20, 204.545, 32.727],
+                          "semanticRole": "reaction-bar",
+                          "layout": { "mode": "row", "gap": 2, "counterAxisAlign": "start", "sizing": { "horizontal": "fixed", "vertical": "fixed" } },
+                          "bbox": [183, 20, 205, 33],
                           "children": [
                             {
                               "type": "frame",
                               "name": "chip-👍",
-                              "style": { "fills": [{ "type": "solid", "color": "rgba(0,0,0,0.54)" }], "cornerRadius": 29.091 },
-                              "layout": { "mode": "row", "padding": [5.455, 10.909, 5.455, 10.909], "gap": 1.818, "counterAxisAlign": "center" },
-                              "bbox": [0, 0, 55, 32.727],
+                              "suggestedComponent": "ReactionChip",
+                              "suggestedProps": { "emoji": "👍", "count": "10" },
+                              "style": { "fills": [{ "type": "solid", "color": "rgba(0,0,0,0.54)" }], "cornerRadius": 32 },
+                              "layout": { "mode": "row", "padding": [6, 12, 6, 12], "gap": 2, "counterAxisAlign": "center" },
+                              "bbox": [0, 0, 55, 33],
                               "children": [
-                                { "type": "text", "name": "emoji", "content": "👍", "style": { "font": { "family": "Pretendard", "size": 14.545, "weight": 400, "lineHeight": 19.091 }, "fills": [{ "type": "solid", "color": "#000000" }] }, "bbox": [0, 0, 18.182, 18.182] },
-                                { "type": "text", "name": "count", "content": "10", "style": { "font": { "family": "Pretendard", "size": 14.545, "weight": 400, "lineHeight": 21.818, "letterSpacing": -0.1455 }, "fills": [{ "type": "solid", "color": "@color.white" }] }, "bbox": [20, 5, 16, 22] }
+                                { "type": "text", "name": "emoji", "content": "👍", "style": { "font": { "family": "Pretendard", "size": 15, "weight": 400, "lineHeight": 19 }, "fills": [{ "type": "solid", "color": "#000000" }] }, "bbox": [0, 0, 18, 18] },
+                                { "type": "text", "name": "count", "content": "10", "style": { "font": { "family": "Pretendard", "size": 15, "weight": 400, "lineHeight": 22, "letterSpacing": -0.1 }, "fills": [{ "type": "solid", "color": "@color.white" }] }, "bbox": [20, 5, 16, 22] }
                               ]
                             },
                             {
                               "type": "frame",
                               "name": "chip-count-24",
-                              "style": { "fills": [{ "type": "solid", "color": "rgba(0,0,0,0.54)" }], "cornerRadius": 29.091 },
-                              "layout": { "mode": "row", "padding": [5.455, 10.909, 5.455, 10.909], "gap": 1.818, "counterAxisAlign": "center" },
-                              "bbox": [57, 0, 45, 32.727],
+                              "suggestedComponent": "ReactionChip",
+                              "suggestedProps": { "count": "24" },
+                              "style": { "fills": [{ "type": "solid", "color": "rgba(0,0,0,0.54)" }], "cornerRadius": 32 },
+                              "layout": { "mode": "row", "padding": [6, 12, 6, 12], "gap": 2, "counterAxisAlign": "center" },
+                              "bbox": [57, 0, 45, 33],
                               "children": [
-                                { "type": "text", "name": "count", "content": "24", "style": { "font": { "family": "Pretendard", "size": 14.545, "weight": 400, "lineHeight": 21.818, "letterSpacing": -0.1455 }, "fills": [{ "type": "solid", "color": "@color.white" }] }, "bbox": [10.909, 5, 16, 22] }
+                                { "type": "text", "name": "count", "content": "24", "style": { "font": { "family": "Pretendard", "size": 15, "weight": 400, "lineHeight": 22, "letterSpacing": -0.1 }, "fills": [{ "type": "solid", "color": "@color.white" }] }, "bbox": [11, 5, 16, 22] }
                               ]
                             },
                             {
                               "type": "frame",
                               "name": "chip-😍",
-                              "style": { "fills": [{ "type": "solid", "color": "rgba(0,0,0,0.54)" }], "cornerRadius": 29.091 },
-                              "layout": { "mode": "row", "padding": [5.455, 10.909, 5.455, 10.909], "gap": 1.818, "counterAxisAlign": "center" },
-                              "bbox": [104, 0, 55, 32.727],
+                              "suggestedComponent": "ReactionChip",
+                              "suggestedProps": { "emoji": "😍", "count": "24" },
+                              "style": { "fills": [{ "type": "solid", "color": "rgba(0,0,0,0.54)" }], "cornerRadius": 32 },
+                              "layout": { "mode": "row", "padding": [6, 12, 6, 12], "gap": 2, "counterAxisAlign": "center" },
+                              "bbox": [104, 0, 55, 33],
                               "children": [
-                                { "type": "text", "name": "emoji", "content": "😍", "style": { "font": { "family": "Pretendard", "size": 14.545, "weight": 400, "lineHeight": 19.091 }, "fills": [{ "type": "solid", "color": "#000000" }] }, "bbox": [0, 0, 18.182, 18.182] },
-                                { "type": "text", "name": "count", "content": "24", "style": { "font": { "family": "Pretendard", "size": 14.545, "weight": 400, "lineHeight": 21.818, "letterSpacing": -0.1455 }, "fills": [{ "type": "solid", "color": "@color.white" }] }, "bbox": [20, 5, 16, 22] }
+                                { "type": "text", "name": "emoji", "content": "😍", "style": { "font": { "family": "Pretendard", "size": 15, "weight": 400, "lineHeight": 19 }, "fills": [{ "type": "solid", "color": "#000000" }] }, "bbox": [0, 0, 18, 18] },
+                                { "type": "text", "name": "count", "content": "24", "style": { "font": { "family": "Pretendard", "size": 15, "weight": 400, "lineHeight": 22, "letterSpacing": -0.1 }, "fills": [{ "type": "solid", "color": "@color.white" }] }, "bbox": [20, 5, 16, 22] }
                               ]
                             },
                             {
                               "type": "frame",
                               "name": "button-dropdown",
-                              "bbox": [161, 0, 32.727, 32.727],
+                              "bbox": [161, 0, 33, 33],
                               "children": [
-                                { "type": "vector", "name": "ic / arrow_right", "ref": "asset-ic-arrow-right", "bbox": [9.09, 9.09, 14.545, 14.545] }
+                                { "type": "vector", "name": "ic / arrow_right", "ref": "asset-ic-arrow-right", "bbox": [9, 9, 15, 15] }
                               ]
                             }
                           ]
@@ -447,14 +488,14 @@
                           "type": "frame",
                           "name": "add-button",
                           "style": {
-                            "strokes": [{ "color": "#DADCDF", "weight": 0.909, "align": "inside" }],
-                            "cornerRadius": 90.909
+                            "strokes": [{ "color": "#DADCDF", "weight": 1, "align": "inside" }],
+                            "cornerRadius": 100
                           },
-                          "layout": { "mode": "row", "padding": [5.455, 14.545, 5.455, 14.545], "gap": 3.636, "primaryAxisAlign": "center", "counterAxisAlign": "center" },
-                          "bbox": [386.55, 20, 80, 32.727],
+                          "layout": { "mode": "row", "padding": [6, 16, 6, 16], "gap": 4, "primaryAxisAlign": "center", "counterAxisAlign": "center" },
+                          "bbox": [387, 20, 80, 33],
                           "children": [
-                            { "type": "vector", "name": "emoji_add_regular_icon", "ref": "asset-emoji-add", "bbox": [0, 0, 21.818, 21.818] },
-                            { "type": "text", "name": "추가", "content": "추가", "style": { "font": { "family": "Pretendard", "size": 14.545, "weight": 500, "lineHeight": 21.818 }, "fills": [{ "type": "solid", "color": "#000000" }] }, "bbox": [25, 0, 26, 22] }
+                            { "type": "vector", "name": "emoji_add_regular_icon", "ref": "asset-emoji-add", "bbox": [0, 0, 22, 22] },
+                            { "type": "text", "name": "추가", "content": "추가", "style": { "font": { "family": "Pretendard", "size": 15, "weight": 500, "lineHeight": 22 }, "fills": [{ "type": "solid", "color": "#000000" }] }, "bbox": [25, 0, 26, 22] }
                           ]
                         },
                         {
@@ -463,49 +504,49 @@
                           "style": {
                             "fills": [{ "type": "solid", "color": "@color.white" }],
                             "strokes": [{ "color": "rgba(0,0,0,0.3)", "weight": 1, "align": "inside" }],
-                            "cornerRadius": 9.142,
-                            "effects": [{ "type": "drop-shadow", "color": "rgba(0,0,0,0.08)", "offset": [0, 2.285], "radius": 6.856, "spread": 0 }]
+                            "cornerRadius": 10,
+                            "effects": [{ "type": "drop-shadow", "color": "rgba(0,0,0,0.08)", "offset": [0, 2], "radius": 7, "spread": 0 }]
                           },
-                          "layout": { "mode": "column", "padding": [27.425, 27.425, 27.425, 27.425], "gap": 11.427, "counterAxisAlign": "start", "sizing": { "horizontal": "hug", "vertical": "hug" } },
-                          "bbox": [126.5, 61, 293, 144],
+                          "layout": { "mode": "column", "padding": [30, 30, 30, 30], "gap": 12, "counterAxisAlign": "start", "sizing": { "horizontal": "hug", "vertical": "hug" } },
+                          "bbox": [127, 61, 293, 144],
                           "children": [
                             {
                               "type": "frame",
                               "name": "picker-row-1",
-                              "layout": { "mode": "row", "gap": 10.8, "counterAxisAlign": "start" },
+                              "layout": { "mode": "row", "gap": 12, "counterAxisAlign": "start" },
                               "bbox": [0, 0, 238, 38],
                               "children": [
-                                { "type": "frame", "name": "chip-👍-24", "style": { "fills": [{ "type": "solid", "color": "rgba(0,0,0,0.54)" }], "cornerRadius": 36.567 }, "bbox": [0, 0, 72, 38], "children": [
-                                  { "type": "text", "name": "emoji", "content": "👍", "style": { "font": { "family": "Pretendard", "size": 18.283, "weight": 400, "lineHeight": 27.425, "letterSpacing": -0.1828 }, "fills": [{ "type": "solid", "color": "#000000" }] }, "bbox": [13.712, 5.4, 22.854, 22.854] },
-                                  { "type": "text", "name": "count", "content": "24", "style": { "font": { "family": "Pretendard", "size": 16.2, "weight": 600, "lineHeight": 27.425, "letterSpacing": -0.162 }, "fills": [{ "type": "solid", "color": "@color.white" }] }, "bbox": [38, 5.4, 20, 27 ] }
+                                { "type": "frame", "name": "chip-👍-24", "suggestedComponent": "EmojiPickerChip", "suggestedProps": { "emoji": "👍", "count": "24" }, "style": { "fills": [{ "type": "solid", "color": "rgba(0,0,0,0.54)" }], "cornerRadius": 40 }, "bbox": [0, 0, 72, 38], "children": [
+                                  { "type": "text", "name": "emoji", "content": "👍", "style": { "font": { "family": "Pretendard", "size": 18, "weight": 400, "lineHeight": 27, "letterSpacing": -0.2 }, "fills": [{ "type": "solid", "color": "#000000" }] }, "bbox": [14, 5, 23, 23] },
+                                  { "type": "text", "name": "count", "content": "24", "style": { "font": { "family": "Pretendard", "size": 16, "weight": 600, "lineHeight": 27, "letterSpacing": -0.2 }, "fills": [{ "type": "solid", "color": "@color.white" }] }, "bbox": [38, 5, 20, 27 ] }
                                 ] },
-                                { "type": "frame", "name": "chip-😍-12", "style": { "fills": [{ "type": "solid", "color": "rgba(0,0,0,0.54)" }], "cornerRadius": 36.567 }, "bbox": [82, 0, 72, 38], "children": [
-                                  { "type": "text", "name": "emoji", "content": "😍", "style": { "font": { "family": "Pretendard", "size": 18.283, "weight": 400, "lineHeight": 27.425, "letterSpacing": -0.1828 }, "fills": [{ "type": "solid", "color": "#000000" }] }, "bbox": [13.712, 5.4, 22.854, 22.854] },
-                                  { "type": "text", "name": "count", "content": "12", "style": { "font": { "family": "Pretendard", "size": 16.2, "weight": 600, "lineHeight": 27.425, "letterSpacing": -0.162 }, "fills": [{ "type": "solid", "color": "@color.white" }] }, "bbox": [38, 5.4, 20, 27 ] }
+                                { "type": "frame", "name": "chip-😍-12", "suggestedComponent": "EmojiPickerChip", "suggestedProps": { "emoji": "😍", "count": "12" }, "style": { "fills": [{ "type": "solid", "color": "rgba(0,0,0,0.54)" }], "cornerRadius": 40 }, "bbox": [82, 0, 72, 38], "children": [
+                                  { "type": "text", "name": "emoji", "content": "😍", "style": { "font": { "family": "Pretendard", "size": 18, "weight": 400, "lineHeight": 27, "letterSpacing": -0.2 }, "fills": [{ "type": "solid", "color": "#000000" }] }, "bbox": [14, 5, 23, 23] },
+                                  { "type": "text", "name": "count", "content": "12", "style": { "font": { "family": "Pretendard", "size": 16, "weight": 600, "lineHeight": 27, "letterSpacing": -0.2 }, "fills": [{ "type": "solid", "color": "@color.white" }] }, "bbox": [38, 5, 20, 27 ] }
                                 ] },
-                                { "type": "frame", "name": "chip-🎉-24", "style": { "fills": [{ "type": "solid", "color": "rgba(0,0,0,0.54)" }], "cornerRadius": 36.567 }, "bbox": [164, 0, 72, 38], "children": [
-                                  { "type": "text", "name": "emoji", "content": "🎉", "style": { "font": { "family": "Pretendard", "size": 18.283, "weight": 400, "lineHeight": 27.425, "letterSpacing": -0.1828 }, "fills": [{ "type": "solid", "color": "#000000" }] }, "bbox": [13.712, 5.4, 22.854, 22.854] },
-                                  { "type": "text", "name": "count", "content": "24", "style": { "font": { "family": "Pretendard", "size": 16.2, "weight": 600, "lineHeight": 27.425, "letterSpacing": -0.162 }, "fills": [{ "type": "solid", "color": "@color.white" }] }, "bbox": [38, 5.4, 20, 27 ] }
+                                { "type": "frame", "name": "chip-🎉-24", "suggestedComponent": "EmojiPickerChip", "suggestedProps": { "emoji": "🎉", "count": "24" }, "style": { "fills": [{ "type": "solid", "color": "rgba(0,0,0,0.54)" }], "cornerRadius": 40 }, "bbox": [164, 0, 72, 38], "children": [
+                                  { "type": "text", "name": "emoji", "content": "🎉", "style": { "font": { "family": "Pretendard", "size": 18, "weight": 400, "lineHeight": 27, "letterSpacing": -0.2 }, "fills": [{ "type": "solid", "color": "#000000" }] }, "bbox": [14, 5, 23, 23] },
+                                  { "type": "text", "name": "count", "content": "24", "style": { "font": { "family": "Pretendard", "size": 16, "weight": 600, "lineHeight": 27, "letterSpacing": -0.2 }, "fills": [{ "type": "solid", "color": "@color.white" }] }, "bbox": [38, 5, 20, 27 ] }
                                 ] }
                               ]
                             },
                             {
                               "type": "frame",
                               "name": "picker-row-2",
-                              "layout": { "mode": "row", "gap": 10.8, "counterAxisAlign": "start" },
+                              "layout": { "mode": "row", "gap": 12, "counterAxisAlign": "start" },
                               "bbox": [0, 49, 238, 38],
                               "children": [
-                                { "type": "frame", "name": "chip-🥺-10", "style": { "fills": [{ "type": "solid", "color": "rgba(0,0,0,0.5)" }], "cornerRadius": 36.567 }, "bbox": [0, 0, 72, 38], "children": [
-                                  { "type": "text", "name": "emoji", "content": "🥺", "style": { "font": { "family": "Pretendard", "size": 18.283, "weight": 400, "lineHeight": 27.425, "letterSpacing": -0.1828 }, "fills": [{ "type": "solid", "color": "#000000" }] }, "bbox": [13.712, 5.4, 22.854, 22.854] },
-                                  { "type": "text", "name": "count", "content": "10", "style": { "font": { "family": "Pretendard", "size": 16.2, "weight": 600, "lineHeight": 27.425, "letterSpacing": -0.162 }, "fills": [{ "type": "solid", "color": "@color.white" }] }, "bbox": [38, 5.4, 20, 27 ] }
+                                { "type": "frame", "name": "chip-🥺-10", "suggestedComponent": "EmojiPickerChip", "suggestedProps": { "emoji": "🥺", "count": "10" }, "style": { "fills": [{ "type": "solid", "color": "rgba(0,0,0,0.5)" }], "cornerRadius": 40 }, "bbox": [0, 0, 72, 38], "children": [
+                                  { "type": "text", "name": "emoji", "content": "🥺", "style": { "font": { "family": "Pretendard", "size": 18, "weight": 400, "lineHeight": 27, "letterSpacing": -0.2 }, "fills": [{ "type": "solid", "color": "#000000" }] }, "bbox": [14, 5, 23, 23] },
+                                  { "type": "text", "name": "count", "content": "10", "style": { "font": { "family": "Pretendard", "size": 16, "weight": 600, "lineHeight": 27, "letterSpacing": -0.2 }, "fills": [{ "type": "solid", "color": "@color.white" }] }, "bbox": [38, 5, 20, 27 ] }
                                 ] },
-                                { "type": "frame", "name": "chip-🥳-8", "style": { "fills": [{ "type": "solid", "color": "rgba(0,0,0,0.5)" }], "cornerRadius": 36.567 }, "bbox": [82, 0, 72, 38], "children": [
-                                  { "type": "text", "name": "emoji", "content": "🥳", "style": { "font": { "family": "Pretendard", "size": 18.283, "weight": 400, "lineHeight": 27.425, "letterSpacing": -0.1828 }, "fills": [{ "type": "solid", "color": "#000000" }] }, "bbox": [13.712, 5.4, 22.854, 22.854] },
-                                  { "type": "text", "name": "count", "content": "8", "style": { "font": { "family": "Pretendard", "size": 16.2, "weight": 600, "lineHeight": 27.425, "letterSpacing": -0.162 }, "fills": [{ "type": "solid", "color": "@color.white" }] }, "bbox": [38, 5.4, 20, 27 ] }
+                                { "type": "frame", "name": "chip-🥳-8", "suggestedComponent": "EmojiPickerChip", "suggestedProps": { "emoji": "🥳", "count": "8" }, "style": { "fills": [{ "type": "solid", "color": "rgba(0,0,0,0.5)" }], "cornerRadius": 40 }, "bbox": [82, 0, 72, 38], "children": [
+                                  { "type": "text", "name": "emoji", "content": "🥳", "style": { "font": { "family": "Pretendard", "size": 18, "weight": 400, "lineHeight": 27, "letterSpacing": -0.2 }, "fills": [{ "type": "solid", "color": "#000000" }] }, "bbox": [14, 5, 23, 23] },
+                                  { "type": "text", "name": "count", "content": "8", "style": { "font": { "family": "Pretendard", "size": 16, "weight": 600, "lineHeight": 27, "letterSpacing": -0.2 }, "fills": [{ "type": "solid", "color": "@color.white" }] }, "bbox": [38, 5, 20, 27 ] }
                                 ] },
-                                { "type": "frame", "name": "chip-👏-10", "style": { "fills": [{ "type": "solid", "color": "rgba(0,0,0,0.5)" }], "cornerRadius": 36.567 }, "bbox": [164, 0, 72, 38], "children": [
-                                  { "type": "text", "name": "emoji", "content": "👏", "style": { "font": { "family": "Pretendard", "size": 18.283, "weight": 400, "lineHeight": 27.425, "letterSpacing": -0.1828 }, "fills": [{ "type": "solid", "color": "#000000" }] }, "bbox": [13.712, 5.4, 22.854, 22.854] },
-                                  { "type": "text", "name": "count", "content": "10", "style": { "font": { "family": "Pretendard", "size": 16.2, "weight": 600, "lineHeight": 27.425, "letterSpacing": -0.162 }, "fills": [{ "type": "solid", "color": "@color.white" }] }, "bbox": [38, 5.4, 20, 27 ] }
+                                { "type": "frame", "name": "chip-👏-10", "suggestedComponent": "EmojiPickerChip", "suggestedProps": { "emoji": "👏", "count": "10" }, "style": { "fills": [{ "type": "solid", "color": "rgba(0,0,0,0.5)" }], "cornerRadius": 40 }, "bbox": [164, 0, 72, 38], "children": [
+                                  { "type": "text", "name": "emoji", "content": "👏", "style": { "font": { "family": "Pretendard", "size": 18, "weight": 400, "lineHeight": 27, "letterSpacing": -0.2 }, "fills": [{ "type": "solid", "color": "#000000" }] }, "bbox": [14, 5, 23, 23] },
+                                  { "type": "text", "name": "count", "content": "10", "style": { "font": { "family": "Pretendard", "size": 16, "weight": 600, "lineHeight": 27, "letterSpacing": -0.2 }, "fills": [{ "type": "solid", "color": "@color.white" }] }, "bbox": [38, 5, 20, 27 ] }
                                 ] }
                               ]
                             }
@@ -515,13 +556,19 @@
                           "type": "image",
                           "name": "image 56 (cursor)",
                           "ref": "asset-image-54",
-                          "bbox": [498.09, 9.5, 33, 33]
+                          "bbox": [498, 10, 33, 33]
                         }
                       ]
                     },
                     {
                       "type": "frame",
                       "name": "Frame 2505",
+                      "suggestedComponent": "FeaturePoint",
+                      "suggestedProps": {
+                        "point": "Point. 02",
+                        "heading": "서로에게 이모지로 감정을 표현해보세요",
+                        "subtitle": "롤링 페이퍼에 이모지를 추가할 수 있어요."
+                      },
                       "layout": {
                         "mode": "column",
                         "gap": 16,
@@ -534,6 +581,7 @@
                         {
                           "type": "frame",
                           "name": "Frame 2508 (Point badge)",
+                          "semanticRole": "badge",
                           "layout": {
                             "mode": "column",
                             "padding": [6, 12, 6, 12],
@@ -617,6 +665,7 @@
                       "componentName": "Button/Primary-56",
                       "isDesignSystemComponent": false,
                       "mappedCodeComponent": null,
+                      "semanticRole": "cta-button",
                       "componentProps": { "variant": "primary", "size": "56" },
                       "content": "구경해보기",
                       "layout": {
