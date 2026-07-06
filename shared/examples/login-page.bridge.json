@@ -2,7 +2,7 @@
   "meta": {
     "figmaUrl": "https://www.figma.com/design/MOCK0000000000/ddalkak-sample?node-id=1-2",
     "mode": "section",
-    "schemaVersion": "2.0",
+    "schemaVersion": "2.1",
     "fidelity": "lossless",
     "extractedAt": "2026-07-05T12:00:00+09:00"
   },
@@ -40,6 +40,7 @@
         {
           "type": "frame",
           "name": "LoginCard",
+          "semanticRole": "login-card",
           "layout": {
             "mode": "column",
             "padding": [40, 40, 40, 40],
@@ -111,6 +112,7 @@
             {
               "type": "instance",
               "name": "submit",
+              "semanticRole": "cta-button",
               "componentName": "Button/Primary",
               "isDesignSystemComponent": true,
               "mappedCodeComponent": "src/components/Button",

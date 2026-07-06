@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "ddalkak/bridge.schema.json",
   "title": "Ddalkak Design Bridge",
-  "description": "Figma를 무손실로 정규화한 디자인 브릿지(v2.0). 토큰을 쓰되 원본값이 항상 복원 가능하고, MCP 상세정보와 스크린샷 교차검증 결과, 반응형 그룹까지 담는다. bridge 단계가 산출, plan/code/verify가 소비하는 SSOT. 규칙: figma-extraction-rules.md",
+  "description": "Figma를 무손실로 정규화한 디자인 브릿지(v2.1). 토큰을 쓰되 원본값이 항상 복원 가능하고, MCP 상세정보와 스크린샷 교차검증 결과, 반응형 그룹, 비전 의미 레이어(semanticRole, rules §11)까지 담는다. bridge 단계가 산출, plan/code/verify가 소비하는 SSOT. 규칙: figma-extraction-rules.md",
   "type": "object",
   "required": ["meta", "tokens", "screens"],
   "properties": {
@@ -12,7 +12,7 @@
       "properties": {
         "figmaUrl": { "type": "string" },
         "mode": { "enum": ["section", "page"] },
-        "schemaVersion": { "const": "2.0" },
+        "schemaVersion": { "enum": ["2.0", "2.1"], "description": "2.1 = 비전 의미 레이어(semanticRole/source/confidence) 추가. 2.0 파일도 유효(신필드는 전부 optional)" },
         "fidelity": { "enum": ["lossless", "summary"], "default": "lossless", "description": "lossless=구조 접기만 하고 속성·자산 전량 캡처, summary=축약 허용" },
         "extractedAt": { "type": "string" }
       }
@@ -76,7 +76,12 @@
         "componentName":           { "type": "string", "description": "type=component/instance일 때. rules §3" },
         "isDesignSystemComponent": { "type": "boolean" },
         "mappedCodeComponent":     { "type": ["string", "null"] },
-        "componentProps":          { "type": "object" }
+        "componentProps":          { "type": "object" },
+        "semanticRole": { "type": "string", "description": "비전이 부여한 의미 역할 (kebab-case: hero, cta-button, card-list …). 수치가 아닌 의미 힌트. rules §11-1" },
+        "source":       { "enum": ["mcp", "vision", "inferred"], "description": "값의 출처. 생략 시 mcp. vision = §8 missing-node를 스크린샷으로 backfill(수치는 추정값). inferred = 디자인 원본에 없는 합성 래퍼 노드(재그룹핑 추론, rules §12-2)" },
+        "confidence":   { "type": "number", "minimum": 0, "maximum": 1, "description": "source=vision일 때 필수. verify 단계 우선 확인 근거. rules §11-2" },
+        "suggestedComponent": { "type": "string", "description": "Figma 컴포넌트는 아니지만 반복 구조라 코드에서 컴포넌트로 만들어야 하는 것의 제안 이름(PascalCase). 같은 값 = 같은 컴포넌트의 발생 → plan/code가 컴포넌트 1개 + .map()으로 계획. componentName(§3 실제 컴포넌트)과 동시 사용 불가. rules §12-1" },
+        "suggestedProps":     { "type": "object", "description": "suggestedComponent 발생 간 달라지는 값(prop 후보). 예: { \"title\": \"감사했어요\" }. rules §12-1" }
       }
     },
     "layout": {
@@ -192,7 +197,8 @@
             "properties": {
               "kind":   { "enum": ["missing-node", "extra-node", "style-mismatch", "text-mismatch", "position-mismatch"] },
               "detail": { "type": "string" },
-              "resolved": { "type": "boolean", "description": "재추출로 보정했으면 true" }
+              "resolved": { "type": "boolean", "description": "보정했으면 true" },
+              "resolution": { "enum": ["re-extract", "vision-backfill"], "description": "보정 방법. vision-backfill이면 해당 노드에 source/confidence 태깅 필수. rules §8/§11" }
             }
           }
         }

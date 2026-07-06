@@ -26,7 +26,7 @@ const NODE_TYPES = ["frame", "group", "text", "image", "vector", "shape", "line"
 // ── 1. 필수 구조 ──────────────────────────────────────────
 if (!data.meta?.figmaUrl) errors.push("meta.figmaUrl 누락");
 if (!["section", "page"].includes(data.meta?.mode)) errors.push("meta.mode는 section|page");
-if (data.meta?.schemaVersion !== "2.0") errors.push(`meta.schemaVersion은 "2.0" (현재: ${JSON.stringify(data.meta?.schemaVersion)})`);
+if (!["2.0", "2.1"].includes(data.meta?.schemaVersion)) errors.push(`meta.schemaVersion은 "2.0"|"2.1" (현재: ${JSON.stringify(data.meta?.schemaVersion)})`);
 if (typeof data.tokens !== "object" || data.tokens === null) errors.push("tokens 객체 누락 (무손실 참조의 원본 사전)");
 if (!Array.isArray(data.screens) || data.screens.length === 0) errors.push("screens 비어있음");
 
@@ -55,7 +55,26 @@ function checkRefs(value, where) {
   }
 }
 
+// 소수 2자리 이상 px 값 감지 (rules §13 — 스케일 아티팩트/정규화 누락)
+let fractionalCount = 0;
+function isFractional(v) {
+  return typeof v === "number" && v !== Math.round(v) && Math.abs(v * 10 - Math.round(v * 10)) > 1e-9;
+}
+function checkNumerics(obj, where, keys) {
+  if (!obj || typeof obj !== "object") return;
+  for (const key of keys) {
+    const v = obj[key];
+    if (isFractional(v)) { fractionalCount++; }
+    else if (Array.isArray(v) && v.some(isFractional)) { fractionalCount++; }
+  }
+}
+
 // ── 3. 노드 순회 ──────────────────────────────────────────
+let visionNodes = 0;    // source:"vision" 노드 수 (rules §11 — verify 우선 확인 대상)
+let semanticCount = 0;  // semanticRole 부여 수
+let inferredNodes = 0;  // source:"inferred" 합성 래퍼 수 (rules §12-2)
+const suggested = new Map(); // suggestedComponent → 발생 수 (rules §12-1)
+
 function walkNodes(nodes, where) {
   for (const [i, node] of (nodes ?? []).entries()) {
     const at = `${where}.nodes[${i}]`;
@@ -67,6 +86,41 @@ function walkNodes(nodes, where) {
     }
     if (node.type === "text" && node.content === undefined && node.runs === undefined) {
       warnings.push(`[${at}] text 노드에 content/runs 둘 다 없음`);
+    }
+    // 비전 보강 태깅 규약 (rules §11)
+    if (node.source === "vision") {
+      visionNodes++;
+      if (typeof node.confidence !== "number" || node.confidence < 0 || node.confidence > 1) {
+        errors.push(`[${at}] source:"vision" 노드에 confidence(0~1) 필수 (rules §11-2)`);
+      }
+    } else if (node.confidence !== undefined) {
+      warnings.push(`[${at}] confidence는 source:"vision"일 때만 의미 있음`);
+    }
+    if (node.semanticRole !== undefined) {
+      semanticCount++;
+      if (!/^[a-z][a-z0-9]*(-[a-z0-9]+)*$/.test(node.semanticRole)) {
+        warnings.push(`[${at}] semanticRole '${node.semanticRole}'는 kebab-case 권장 (rules §11-1)`);
+      }
+    }
+    // 수치 정규화 확인 (rules §13) — 소수 2자리 이상 px 값은 정규화 누락 신호
+    checkNumerics(node.layout, `${at}.layout`, ["gap", "padding"]);
+    checkNumerics(node.style, `${at}.style`, ["cornerRadius"]);
+
+    // 구조 추론 규약 (rules §12)
+    if (node.source === "inferred") {
+      inferredNodes++;
+      if (!Array.isArray(node.children) || node.children.length === 0) {
+        errors.push(`[${at}] source:"inferred" 합성 노드는 자식을 감싸는 래퍼여야 함 (rules §12-2)`);
+      }
+    }
+    if (node.suggestedComponent !== undefined) {
+      suggested.set(node.suggestedComponent, (suggested.get(node.suggestedComponent) ?? 0) + 1);
+      if (!/^[A-Z][A-Za-z0-9]*$/.test(node.suggestedComponent)) {
+        warnings.push(`[${at}] suggestedComponent '${node.suggestedComponent}'는 PascalCase 권장 (rules §12-1)`);
+      }
+      if (node.componentName !== undefined) {
+        errors.push(`[${at}] suggestedComponent와 componentName 동시 사용 불가 — 실제 Figma 컴포넌트면 §3, 추론이면 §12`);
+      }
     }
     checkRefs(node.style, `${at}.style`);
     checkRefs(node.layout, `${at}.layout`);
@@ -93,6 +147,16 @@ for (const [i, screen] of (data.screens ?? []).entries()) {
 }
 
 // ── 결과 ──────────────────────────────────────────────────
+if (visionNodes > 0) {
+  warnings.push(`vision 보강 노드 ${visionNodes}개 — 수치는 추정값, verify 단계에서 우선 대조 필요 (rules §11)`);
+}
+for (const [name, count] of suggested) {
+  if (count < 2) warnings.push(`suggestedComponent '${name}' 발생 1회 — 반복(≥2회) 근거 필요 (rules §12-1)`);
+}
+if (fractionalCount > 0) {
+  warnings.push(`소수점 px 값 ${fractionalCount}건 (gap/padding/cornerRadius) — 수치 정규화 누락, 스케일 아티팩트 의심 (rules §13)`);
+}
+
 if (errors.length) {
   console.error("❌ 검증 실패:\n - " + errors.join("\n - "));
   process.exit(1);
@@ -100,4 +164,9 @@ if (errors.length) {
 if (warnings.length) {
   console.warn("⚠️  경고:\n - " + warnings.join("\n - "));
 }
-console.log("✅ 브릿지 검증 통과 (v2.0):", target);
+const extra = [];
+if (semanticCount) extra.push(`semanticRole ${semanticCount}개`);
+if (visionNodes) extra.push(`vision 노드 ${visionNodes}개`);
+if (inferredNodes) extra.push(`inferred 그룹 ${inferredNodes}개`);
+if (suggested.size) extra.push(`suggestedComponent ${[...suggested.keys()].join("/")}`);
+console.log(`✅ 브릿지 검증 통과 (v${data.meta.schemaVersion}): ${target}${extra.length ? "  [" + extra.join(", ") + "]" : ""}`);

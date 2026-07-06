@@ -69,7 +69,9 @@
 4. `component-map` — `get_code_connect_map` + 인스턴스 정보로 컴포넌트 판별(§3).
 5. `assets` — `download_assets`로 §2 장식 자산 + 이미지 fill 실제 파일 export.
 6. `screenshots` — `get_screenshot`으로 화면별 스크린샷 → `assets[]`(kind=screenshot) + `screens[].screenshot`.
-7. 병합 후 §2 가지치기, §5 반응형 그룹핑 적용 → §8 교차검증 → 최종 JSON 조립.
+7. `semantic` — 캡처된 스크린샷(로컬 파일)을 **비전으로 분석**해 의미 레이어를 얹는다(§11).
+   **MCP 호출 0회** — 이미 받은 스크린샷을 읽는 것이므로 replay(`source: cache`)에서도 동일하게 동작.
+8. 병합 후 §2 가지치기, §5 반응형 그룹핑 적용 → §8 교차검증 → 최종 JSON 조립.
 
 ## 7. 오토레이아웃 캡처
 컨테이너 노드(frame/group)의 `layout` 객체를 다음까지 채운다 (퍼블 재현 핵심):
@@ -83,7 +85,10 @@
    - 스크린샷엔 보이는데 구조 트리에 없는 요소 → `missing-node` (가지치기 과잉/추출 실패). 재추출 시도.
    - 구조엔 있는데 화면엔 안 보이는 요소 → `extra-node` (숨김 처리 누락 등).
    - 색/그림자/폰트/위치가 눈으로 봐도 다르면 → `style-mismatch` / `text-mismatch` / `position-mismatch`.
-2. 발견 항목을 `screens[].reconciliation.discrepancies[]`에 기록. 재추출로 보정한 항목은 `resolved: true`.
+2. 발견 항목을 `screens[].reconciliation.discrepancies[]`에 기록. 보정한 항목은 `resolved: true` + `resolution` 명시:
+   - `re-extract` — MCP 재추출로 보정 (기본, 우선 시도).
+   - `vision-backfill` — 재추출로도 못 채우는 것(예: 이미지에 래스터화된 텍스트)을 스크린샷 비전으로 보강.
+     이 경로로 생긴 노드/값은 반드시 §11 규약대로 `source: "vision"` + `confidence` 태깅.
 3. 전부 일치하면 `reconciliation.status: "match"`. 미해결 불일치가 있으면 `"discrepancies"`로 두고 사용자에게 보고.
 - 이 패스가 "누락되는 퍼블 내용 없음"을 실제로 보장하는 안전망이다.
 
@@ -122,3 +127,70 @@ Figma MCP 호출은 유한한 자원이다(예: 월 N회). 개발 중 매번 라
   **일반(런타임) 사용은 캐시를 쓰지 않는다** — live로 뽑아 프로젝트에 바로 적재하는 게 정상 경로다.
 - 라이브/캐시 어느 경로든 그 뒤 정규화(§2~§8)는 동일하다. 즉 캐시로도 실제 스키마 산출·교차검증을 그대로 테스트할 수 있다.
 - 캡처 완결성은 `node scripts/mcp-cache.mjs check fixtures/figma/<capture-name>`로 확인한다.
+
+## 11. 비전 보강 (vision enrichment) — 의미 레이어 + 누락 backfill
+MCP 데이터만으로는 "이쁜 코드"에 필요한 **의미**(이게 히어로인지, CTA인지, 카드 리스트인지)가 없다.
+스크린샷을 비전으로 분석해 그 의미 레이어를 얹는다. 단, 신뢰 영역을 엄격히 나눈다:
+
+**대원칙 — MCP 측정값이 항상 정답.** 비전은 MCP가 준 수치·색·텍스트·토큰을 **절대 덮어쓰지 않는다**
+(비전은 16px을 15로 환각한다). 비전이 하는 일은 두 가지뿐:
+
+1. **의미 레이어 (semantic)** — 모든 브릿지에 기본 수행:
+   - 주요 컨테이너/요소에 `semanticRole` 부여 — 예: `hero`, `nav`, `cta-button`, `card`, `card-list`,
+     `footer`, `avatar`, `badge`. 자유 문자열이되 kebab-case, 일반적 UI 용어 사용.
+   - **반복 패턴 인식**: 같은 구조가 2회 이상 반복되는 형제들 → 부모에 `card-list`류 role,
+     자식들에 동일 role. plan/code가 `.map()` 반복 렌더로 계획하는 근거가 된다.
+   - `Frame 27` 같은 무의미한 레이어 이름의 컨테이너에 우선 적용. 확신 없으면 안 붙인다(추측 금지).
+   - `semanticRole`은 비전 전용 필드이므로 별도 태깅 불필요.
+2. **누락 backfill** — §8 교차검증이 `missing-node`를 잡았고 재추출로도 못 채울 때만:
+   - 스크린샷에서 읽은 내용으로 노드를 생성하되, 그 노드에 `source: "vision"` + `confidence`(0~1)를 반드시 붙인다.
+   - 이 노드의 수치(bbox/px)는 **추정값**이다 — verify 단계가 최우선 확인 대상으로 삼는다.
+   - 전형적 대상: 이미지에 래스터화되어 MCP 트리에 없는 텍스트/로고.
+
+**비용·재현성**: 스크린샷은 §6-6에서 이미 확보된 로컬 파일이므로 이 패스는 **MCP 호출 0회**,
+`source: cache` replay에서도 동일하게 동작한다. 토큰도 §8 교차검증이 읽는 스크린샷을 **공유**하므로
+순수 추가분은 추론 1~2k 수준(화면당). 빠른 이터레이션에는 `enrich: off`로 §11·§12를 통째로 건너뛸 수 있다
+(§8 교차검증은 안전망이므로 off여도 수행).
+**검증**: `validate-bridge.mjs`가 vision 유래 노드 수를 경고로 보고한다 — 0이면 순수 MCP 브릿지,
+있으면 verify 단계에서 해당 노드를 우선 대조한다.
+
+## 12. 구조 추론 — 디자인에 없어도 코드에 필요한 구조를 제안
+디자이너가 Figma에서 컴포넌트화/그룹핑을 안 해놨어도, 코드는 **재사용 컴포넌트와 의미 있는 중첩**으로
+나와야 한다. MCP 데이터에 그 구조가 없으면 extractor가 **추론해서 제안**을 얹는다 (§3의 "실제 Figma
+컴포넌트 판별"과 별개 레이어 — 실제가 있으면 §3이 항상 우선).
+
+1. **컴포넌트화 추론 (`suggestedComponent`)**
+   - 대상: Figma 컴포넌트/인스턴스가 **아닌데** 같은 구조가 2회 이상 반복되는 서브트리
+     (자식 타입 시퀀스·layout·스타일 시그니처가 동일), 또는 명백한 UI 패턴(버튼 모양 프레임 등).
+   - 반복 발생 노드 각각에 동일한 `suggestedComponent: "RollingCard"`(PascalCase)를 부여한다.
+     → plan/code는 같은 값을 가진 노드들을 **컴포넌트 1개 + `.map()` 데이터**로 계획한다.
+   - 발생 간 달라지는 값(텍스트/색/이미지)은 `suggestedProps`에 기록 — prop 후보가 된다.
+     예: `{ "title": "감사했어요", "avatar": "asset-avatar-2" }`
+   - 판단 근거는 structure 유사성 + 비전 반복 인식(§11-1). **확신 없으면 안 붙인다** — 잘못된
+     컴포넌트화 제안은 없느니만 못하다. 1회만 나오는 요소에는 붙이지 않는다(반복 근거 필수).
+   - §3과의 관계: `componentName`/`isDesignSystemComponent`는 "Figma에 실제로 있는 것",
+     `suggestedComponent`는 "없지만 만들어야 하는 것". 한 노드에 둘 다 있을 수 없다.
+2. **재그룹핑 추론 (합성 래퍼 노드, `source: "inferred"`)**
+   - 대상: 절대배치(`layout.mode: "none"`) 컨테이너에서 시각적으로 한 덩어리인 형제들
+     (근접·정렬·공통 배경/테두리 위에 얹힘). 예: 라벨 + 인풋이 그룹 없이 나란히 절대배치된 경우.
+   - extractor는 이들을 감싸는 **합성 `group` 노드를 만들어도 된다.** 단:
+     - 합성 노드에 `source: "inferred"` 태깅 필수 (디자인 원본에 없는 노드임을 표시).
+     - 시각 결과를 바꾸면 안 된다 — 합성 노드의 `bbox`는 자식들의 합집합, 스타일 없음.
+     - 원본 자식 노드들은 그대로 보존 (무손실 — 추가만 허용, 변형·삭제 금지).
+   - 이때 layout 추론(자식 배치가 세로 등간격이면 `mode: "column"` + `gap`)까지 채우면
+     code가 absolute 대신 flex로 구현할 수 있다.
+- **검증**: `validate-bridge.mjs`가 suggestedComponent(PascalCase)와 inferred 노드 수를 보고한다.
+  vision(§11)과 마찬가지로 추론 결과는 verify 단계의 확인 대상이다.
+
+## 13. 수치 정규화 — 소수점 픽셀은 코드에 없다
+실측 근거: pc-home 캡처에서 `radius: 36.567`, `gap: 1.818`, `padding: [5.455, 10.909, …]` 같은 값이
+다수 발견됨 — 공통 배율(≈0.909)이 곱해진 **스케일 아티팩트**다. `gap-[1.818px]` 같은 코드는 아무도 안 쓴다.
+정규화는 디자인 의도의 **복원**이지 손실이 아니다 (아티팩트가 원본 의도가 아님).
+
+1. **스케일 아티팩트 복원(우선)**: 같은 서브트리의 값들이 공통 배율의 곱으로 설명되면
+   (예: 5.455=6×0.909, 10.909=12×0.909, 1.818=2×0.909) 배율을 나눠 **nominal 값**(6, 12, 2)으로 복원한다.
+2. **반올림(차선)**: 배율로 설명 안 되는 나머지 px 수치(`gap`/`padding`/`cornerRadius`/`stroke.weight`/
+   `effect.radius·offset`/`bbox`)는 **정수로 반올림**. 단 0 < v < 1 인 값(0.5 border 등)은 소수 1자리 유지.
+3. **typography**: `size`는 정수 반올림, `lineHeight`가 비율(1.5)이면 소수 2자리까지 유지.
+4. 적용 시점: extractor 병합 후처리의 마지막(§12 다음, 검증 §9 직전). fidelity와 무관하게 항상 적용.
+- **검증**: `validate-bridge.mjs`가 소수 2자리 이상 px 값을 경고한다 — 정규화 누락 신호.
