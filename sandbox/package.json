@@ -4,6 +4,9 @@
   "version": "0.0.1",
   "description": "딸깍 파이프라인 테스트용 샌드박스 (React 웹 기본 베이스)",
   "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
