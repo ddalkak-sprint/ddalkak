@@ -1,0 +1,32 @@
+# actions/labeler v5 설정 — PR이 수정한 파일 경로에 따라 라벨 자동 부착
+ci:
+  - changed-files:
+      - any-glob-to-any-file: ".github/**"
+
+sandbox:
+  - changed-files:
+      - any-glob-to-any-file: "sandbox/**"
+
+bridge-schema:
+  - changed-files:
+      - any-glob-to-any-file: "shared/**"
+
+scripts:
+  - changed-files:
+      - any-glob-to-any-file: "scripts/**"
+
+fixtures:
+  - changed-files:
+      - any-glob-to-any-file: "fixtures/**"
+
+agents:
+  - changed-files:
+      - any-glob-to-any-file: "agents/**"
+
+skills:
+  - changed-files:
+      - any-glob-to-any-file: "skills/**"
+
+documentation:
+  - changed-files:
+      - any-glob-to-any-file: "**/*.md"
