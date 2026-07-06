@@ -22,7 +22,7 @@
 | 브릿지 노드 | 코드 타깃 | 비고 |
 |-------------|-----------|------|
 | `type: component` / `instance` | 재사용 컴포넌트 (import·수정·신규) | §3으로 판별. `instance`는 v2.1의 컴포넌트 인스턴스 표기 — `component`와 동일 취급 |
-| `type: frame` / `group` | 레이아웃 JSX (flex 컨테이너) | `layout`(row/column)+`gap`+`padding`+`style`를 컨테이너 클래스로. `layout.mode: "none"`이면 §2-1 |
+| `type: frame` / `group` | 레이아웃 JSX (flex 컨테이너) | `layout`(row/column)+`gap`+`padding`+`style`를 컨테이너 클래스로. `mode: "wrap"`이면 `flex-wrap`(그리드형 목록 — 자식 폭 고정 여부 확인). `mode: "none"`이면 §2-1 |
 | `type: text` | 텍스트 요소 | `content`를 그대로, `style.token`/`style.color`를 타이포·색 매핑. `runs[]`가 있으면 run별 `<span>`으로 분할해 서식 구현(run에 `role: "link"`가 있으면 그 run만 `<a>`). `style.role: "link"`면 요소 전체를 `<a>` |
 | `type: image` + `ref` | 에셋 (`assets[]` export) | §9. `<img>` 로 렌더, import 경로 계획 |
 | `type: vector` + `ref` | SVG 에셋 | image와 동일하게 §9 (`<img src={svg}>` 기본, 색 제어가 필요하면 인라인 SVG로 명시) |
@@ -62,6 +62,8 @@
 - `isDesignSystemComponent`가 false/누락이면 → 그 화면 전용이면 페이지 내부 JSX로, 반복되면 신규 컴포넌트로.
   단 `componentName`/`suggestedComponent`가 명확한 컴포넌트 단위를 가리키면(§2-2) 그쪽을 우선한다.
 - `componentProps`는 컴포넌트에 넘길 props 초안으로 기록한다(예: `{ variant, size, type }` → props 표).
+  이때 필수/선택을 함께 표기한다 — 모든 인스턴스가 값을 명시하면 필수(기본값 없음), 값이 없는 인스턴스가
+  있으면 optional (code-rules §7-1과 동일 기준). 단일 텍스트 `content`는 prop이 아니라 children으로 계획한다.
 - `componentName`이 `Name/Variant-Size` 패턴이면(예: `Button/Outlined-40`) 변형마다 별도 컴포넌트가 아니라
   **베이스 컴포넌트 1개 + variant/size props**로 계획한다.
 

@@ -12,19 +12,21 @@ import emojiAddIcon from "../assets/pc-home/emoji_add_icon.svg";
 export default function PcHome() {
   return (
     <div className="min-h-screen bg-white font-pretendard">
-      {/* header (semanticRole: nav) — line 노드는 border-b로 */}
+      {/* header (semanticRole: nav) — line 노드는 border-b, gap 944는 잔여 공간 → justify-between (plan ⚠1) */}
       <header className="border-b border-[#EDEDED] bg-white">
         <div className="mx-auto flex h-16 w-[1146px] items-center justify-between">
           <div className="flex items-center gap-2">
             <img src={logoIcon} alt="Rolling 로고" width={28} height={28} />
             <span className="font-poppins text-[20px] font-bold text-gray-90">Rolling</span>
           </div>
-          <HomeButton variant="outlined" size={40} label="롤링 페이퍼 만들기" />
+          <HomeButton variant="outlined" size={40}>
+            롤링 페이퍼 만들기
+          </HomeButton>
         </div>
       </header>
 
       <main className="mx-auto mt-[60px] flex w-[1200px] flex-col gap-[30px]">
-        {/* 섹션 1 — Point. 01 + 메시지 카드 일러스트 (절대배치) */}
+        {/* 섹션 1 — Point. 01 + 메시지 카드 일러스트 (절대배치, plan §2-1 예외) */}
         <section className="relative h-[324px] overflow-hidden rounded-2xl bg-surface-home">
           <div className="absolute left-[60px] top-[60px] w-[268px]">
             <FeaturePoint
@@ -33,7 +35,7 @@ export default function PcHome() {
               subtitle="로그인 없이 자유롭게 만들어요."
             />
           </div>
-          {/* 카드 목록 — 브릿지 bbox는 겹침으로 기록됐으나 스크린샷 기준 나란히 배열 (스크린샷 우선) */}
+          {/* bbox 겹침 ↔ 스크린샷 모순 → 스크린샷 기준 나란히 배열 (plan ⚠2) */}
           <div className="absolute left-[480px] top-[81px] flex items-start gap-3">
             <MessageCard
               from="강미나"
@@ -54,7 +56,13 @@ export default function PcHome() {
             {/* add-card — 일러스트 구성물 */}
             <div className="relative h-[162px] w-[205px] rounded-[14px] border border-black/40 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.08)]">
               <img src={plusIcon} alt="" width={38} height={38} className="absolute left-[84px] top-[57px]" />
-              <img src={cursorImg} alt="" width={33} height={33} className="absolute left-[125px] top-[63px]" />
+              <img
+                src={cursorImg}
+                alt=""
+                width={33}
+                height={33}
+                className="absolute left-[125px] top-[63px]"
+              />
             </div>
           </div>
         </section>
@@ -62,7 +70,7 @@ export default function PcHome() {
         {/* 섹션 2 — 이모지 위젯 일러스트 (절대배치) + Point. 02 */}
         <section className="relative h-[324px] overflow-hidden rounded-2xl bg-surface-home">
           <div className="absolute left-0 top-[60px] h-[204px] w-[720px]">
-            <div className="absolute left-[183px] top-[20px] flex items-start gap-[2px]">
+            <div className="absolute left-[183px] top-[20px] flex items-start gap-0.5">
               <ReactionChip emoji="👍" count="10" />
               <ReactionChip count="24" />
               <ReactionChip emoji="😍" count="24" />
@@ -76,9 +84,9 @@ export default function PcHome() {
             </div>
             <div className="absolute left-[127px] top-[61px] flex w-[293px] flex-col items-start gap-3 rounded-[10px] border border-black/30 bg-white p-[30px] shadow-[0_2px_7px_rgba(0,0,0,0.08)]">
               <div className="flex gap-3">
-                <EmojiPickerChip emoji="👍" count="24" />
-                <EmojiPickerChip emoji="😍" count="12" />
-                <EmojiPickerChip emoji="🎉" count="24" />
+                <EmojiPickerChip emoji="👍" count="24" overlay={54} />
+                <EmojiPickerChip emoji="😍" count="12" overlay={54} />
+                <EmojiPickerChip emoji="🎉" count="24" overlay={54} />
               </div>
               <div className="flex gap-3">
                 <EmojiPickerChip emoji="🥺" count="10" overlay={50} />
@@ -97,9 +105,11 @@ export default function PcHome() {
           </div>
         </section>
 
-        {/* 하단 CTA (semanticRole: cta-button) — 브릿지 bbox는 x102이나 스크린샷 기준 중앙 정렬 (스크린샷 우선) */}
-        <div className="mb-[150px] mt-[-6px] flex justify-center pt-[24px]">
-          <HomeButton variant="primary" size={56} label="구경해보기" className="w-[280px]" />
+        {/* 하단 CTA — bbox x=102 ↔ 스크린샷 모순 → 중앙 정렬 (plan ⚠2). 버튼 top 850 = 섹션2 끝 802 + gap 30 + 18 */}
+        <div className="mb-[150px] mt-[18px] flex justify-center">
+          <HomeButton variant="primary" size={56} className="w-[280px]">
+            구경해보기
+          </HomeButton>
         </div>
       </main>
     </div>
