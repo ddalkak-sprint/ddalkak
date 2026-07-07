@@ -1,0 +1,20 @@
+{
+  "name": "ddalkak-plugin",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "visual:verify": "node scripts/visual-verify/cli.mjs",
+    "test:visual": "node scripts/visual-verify/cli.mjs",
+    "test:visual:engine": "node scripts/visual-verify/test-engine.mjs"
+  },
+  "dependencies": {
+    "pixelmatch": "7.2.0",
+    "playwright": "1.61.1",
+    "pngjs": "7.0.0",
+    "sharp": "0.35.3"
+  }
+}
