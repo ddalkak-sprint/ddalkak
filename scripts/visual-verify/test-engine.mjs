@@ -9,6 +9,8 @@ const tests = [
   ["pixel pass returns exit 0", testPixelPass],
   ["pixel fail returns exit 1", testPixelFail],
   ["style fail is advisory and keeps pixel pass", testStyleAdvisory],
+  ["data-dk exact match wins over fallback", testDataDkExactMatch],
+  ["anchor diagnostics report duplicate unknown and missing", testAnchorDiagnostics],
   ["non-body selector returns execution error", testSelectorError],
   ["missing baseline returns config error", testMissingBaseline]
 ];
@@ -111,6 +113,67 @@ async function testSelectorError() {
   });
 }
 
+async function testDataDkExactMatch() {
+  await withProject("vv-dk-", async (projectRoot) => {
+    const url = dataUrl(textPage({
+      color: "rgb(255, 0, 0)",
+      text: "Rendered copy",
+      dataDk: "children[0]"
+    }));
+    await writeBaseline({ projectRoot, url, viewport: { width: 160, height: 40 } });
+    writeBridge({
+      projectRoot,
+      name: "dk",
+      frame: { w: 160, h: 40 },
+      node: textNode({
+        content: "Bridge copy",
+        fill: "#ff0000",
+        bbox: [80, 0, 80, 20]
+      })
+    });
+
+    const result = await runVisualVerify({ project: projectRoot, name: "dk", url });
+    const match = result.matches.find((item) => item.dkPath === "children[0]");
+    assert(match?.matched === true, "expected data-dk match");
+    assert(match.strategy === "data-dk-exact", `expected data-dk-exact, got ${match?.strategy}`);
+    assert(match.confidence === 1, `expected confidence 1, got ${match?.confidence}`);
+    assert(match.dataDk === "children[0]", `expected data-dk value, got ${match?.dataDk}`);
+    assert(result.anchors.summary.exact === 1, `expected one exact anchor, got ${result.anchors.summary.exact}`);
+    assert(result.anchors.summary.duplicate === 0, "expected no duplicate anchors");
+  });
+}
+
+async function testAnchorDiagnostics() {
+  await withProject("vv-anchor-", async (projectRoot) => {
+    const url = dataUrl(`<!doctype html><html><body style="margin:0;background:#fff">
+      <div data-dk="children[0]" style="color:rgb(255,0,0);font-size:16px;font-weight:400;line-height:20px;font-family:Arial,sans-serif">Hello</div>
+      <span data-dk="children[0]" style="display:block;width:1px;height:1px"></span>
+      <span data-dk="children[99]" style="display:block;width:1px;height:1px"></span>
+    </body></html>`);
+    await writeBaseline({ projectRoot, url, viewport: { width: 180, height: 50 } });
+    writeBridge({
+      projectRoot,
+      name: "anchor",
+      frame: { w: 180, h: 50 },
+      node: {
+        type: "frame",
+        name: "root",
+        bbox: [0, 0, 180, 50],
+        children: [
+          textNode({ fill: "#ff0000" })
+        ]
+      }
+    });
+
+    const result = await runVisualVerify({ project: projectRoot, name: "anchor", url });
+    assert(result.anchors.gating === false, "expected anchors.gating=false");
+    assert(result.anchors.summary.duplicate === 1, `expected duplicate=1, got ${result.anchors.summary.duplicate}`);
+    assert(result.anchors.summary.unknown === 1, `expected unknown=1, got ${result.anchors.summary.unknown}`);
+    assert(result.anchors.summary.missing >= 1, `expected at least one missing, got ${result.anchors.summary.missing}`);
+    assert(exitCodeForResult(result) === 0, "expected anchor diagnostics not to affect exit code");
+  });
+}
+
 async function testMissingBaseline() {
   await withProject("vv-missing-", async (projectRoot) => {
     mkdirSync(join(projectRoot, ".ddalkak", "bridge"), { recursive: true });
@@ -186,21 +249,22 @@ function writeBridge({ projectRoot, name, frame = { w: 120, h: 40 }, node, skipA
   writeFileSync(join(projectRoot, ".ddalkak", "bridge", `${name}.bridge.json`), `${JSON.stringify(bridge, null, 2)}\n`);
 }
 
-function textNode({ fill }) {
+function textNode({ content = "Hello", fill, bbox = [0, 0, 40, 20] }) {
   return {
     type: "text",
     name: "hello",
-    content: "Hello",
+    content,
     style: {
       font: "@type.body",
       fills: [{ type: "solid", color: fill }]
     },
-    bbox: [0, 0, 40, 20]
+    bbox
   };
 }
 
-function textPage({ color }) {
-  return `<!doctype html><html><body style="margin:0;background:#fff"><div style="color:${color};font-size:16px;font-weight:400;line-height:20px;font-family:Arial, sans-serif">Hello</div></body></html>`;
+function textPage({ color, text = "Hello", dataDk = "" }) {
+  const dkAttr = dataDk ? ` data-dk="${dataDk}"` : "";
+  return `<!doctype html><html><body style="margin:0;background:#fff"><div${dkAttr} style="color:${color};font-size:16px;font-weight:400;line-height:20px;font-family:Arial, sans-serif">${text}</div></body></html>`;
 }
 
 function boxPage({ color }) {

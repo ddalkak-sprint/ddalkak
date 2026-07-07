@@ -1,39 +1,52 @@
 export function flattenBridgeNodes(screen) {
   const nodes = [];
-  for (const node of screen.nodes ?? []) {
-    walkBridgeNode({ node, parentAbs: [0, 0], path: [screen.name], nodes });
+  for (const [index, node] of (screen.nodes ?? []).entries()) {
+    walkBridgeNode({
+      node,
+      parentAbs: [0, 0],
+      path: [screen.name],
+      dkPath: `children[${index}]`,
+      nodes
+    });
   }
   return nodes;
 }
 
 export function matchBridgeToDom({ screen, domSnapshot }) {
   const bridgeNodes = flattenBridgeNodes(screen);
-  return bridgeNodes.map((bridgeNode) => {
+  const matches = bridgeNodes.map((bridgeNode) => {
     const match = bestDomMatch(bridgeNode, domSnapshot);
     return {
       nodeId: bridgeNode.id,
       nodePath: bridgeNode.path,
+      dkPath: bridgeNode.dkPath,
       nodeName: bridgeNode.name,
       nodeType: bridgeNode.type,
       matched: match.confidence >= 0.35,
       domId: match.candidate?.id ?? null,
       domKind: match.candidate?.kind ?? null,
       tag: match.candidate?.tag ?? null,
+      dataDk: candidateDataDk(match.candidate),
       text: match.candidate?.text ?? "",
       bbox: match.candidate ? boxArray(match.candidate.bbox) : null,
       confidence: roundMetric(match.confidence),
       strategy: match.strategy,
       expected: {
         text: bridgeNode.text,
-        bbox: bridgeNode.bbox
+        bbox: bridgeNode.bbox,
+        dkPath: bridgeNode.dkPath
       },
       bridgeNode,
       domCandidate: match.candidate ?? null
     };
   });
+  return {
+    matches,
+    anchors: collectAnchorDiagnostics({ bridgeNodes, domSnapshot, matches })
+  };
 }
 
-function walkBridgeNode({ node, parentAbs, path, nodes }) {
+function walkBridgeNode({ node, parentAbs, path, dkPath, nodes }) {
   const local = Array.isArray(node.bbox) ? node.bbox : null;
   const abs = local
     ? [parentAbs[0] + local[0], parentAbs[1] + local[1], local[2], local[3]]
@@ -48,15 +61,17 @@ function walkBridgeNode({ node, parentAbs, path, nodes }) {
     type: node.type,
     node,
     text,
+    dkPath,
     bbox: abs?.map((value) => Math.round(value)) ?? null
   };
   nodes.push(item);
 
-  for (const child of node.children ?? []) {
+  for (const [index, child] of (node.children ?? []).entries()) {
     walkBridgeNode({
       node: child,
       parentAbs: abs ? [abs[0], abs[1]] : parentAbs,
       path: nextPath,
+      dkPath: `${dkPath}.children[${index}]`,
       nodes
     });
   }
@@ -67,12 +82,72 @@ function bestDomMatch(bridgeNode, domSnapshot) {
     ...domSnapshot.elements.map((candidate) => ({ ...candidate, source: "element" })),
     ...domSnapshot.textNodes.map((candidate) => ({ ...candidate, source: "text" }))
   ];
+  const exact = candidates.find((candidate) => candidateDataDk(candidate) === bridgeNode.dkPath);
+  if (exact) {
+    return {
+      candidate: exact,
+      confidence: 1,
+      strategy: "data-dk-exact"
+    };
+  }
+
   let best = { candidate: null, confidence: 0, strategy: "none" };
   for (const candidate of candidates) {
     const score = scoreCandidate(bridgeNode, candidate);
     if (score.confidence > best.confidence) best = { candidate, ...score };
   }
   return best;
+}
+
+function candidateDataDk(candidate) {
+  return candidate?.attributes?.dataDk ?? candidate?.dataDk ?? "";
+}
+
+function collectAnchorDiagnostics({ bridgeNodes, domSnapshot, matches }) {
+  const bridgeByDk = new Map(bridgeNodes.map((node) => [node.dkPath, node]));
+  const domByDk = new Map();
+  for (const candidate of domSnapshot.elements) {
+    const dataDk = candidateDataDk(candidate);
+    if (!dataDk) continue;
+    if (!domByDk.has(dataDk)) domByDk.set(dataDk, []);
+    domByDk.get(dataDk).push(candidate);
+  }
+
+  const duplicates = [...domByDk.entries()]
+    .filter(([, candidates]) => candidates.length > 1)
+    .map(([dataDk, candidates]) => ({
+      dataDk,
+      domIds: candidates.map((candidate) => candidate.id)
+    }));
+  const unknown = [...domByDk.entries()]
+    .filter(([dataDk]) => !bridgeByDk.has(dataDk))
+    .map(([dataDk, candidates]) => ({
+      dataDk,
+      domIds: candidates.map((candidate) => candidate.id)
+    }));
+  const missing = bridgeNodes
+    .filter((node) => !domByDk.has(node.dkPath))
+    .map((node) => ({
+      dkPath: node.dkPath,
+      nodePath: node.path,
+      nodeType: node.type
+    }));
+  const exact = matches.filter((match) => match.strategy === "data-dk-exact").length;
+
+  return {
+    gating: false,
+    summary: {
+      bridge: bridgeNodes.length,
+      dom: [...domByDk.values()].reduce((total, candidates) => total + candidates.length, 0),
+      exact,
+      missing: missing.length,
+      duplicate: duplicates.length,
+      unknown: unknown.length
+    },
+    duplicates,
+    missing,
+    unknown
+  };
 }
 
 function scoreCandidate(bridgeNode, candidate) {
