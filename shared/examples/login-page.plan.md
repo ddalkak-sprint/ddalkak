@@ -24,9 +24,10 @@
 | `src/assets/login-page/logo.svg` | 신규 | 브릿지 `asset-logo` export |
 | `tailwind.config.js` | 수정 | color/type 토큰 등록 |
 
-## 디자인 토큰 매핑
-| 브릿지 토큰 | 코드 표현 |
-|-------------|-----------|
+등록 토큰 + 화면에 쓰인 비토큰 raw 값을 모두 최종 코드 표현으로 확정한다 (code는 복사만 — plan-rules §4).
+
+| 브릿지 값 | 코드 표현 (최종) |
+|-----------|------------------|
 | `color.primary` #3B82F6 | `colors.primary` → `bg-primary` |
 | `color.primary-hover` #2563EB | `colors.primary-hover` → `hover:bg-primary-hover` |
 | `color.text-strong` #111827 | `colors.text-strong` → `text-text-strong` |
@@ -37,6 +38,9 @@
 | `type.label-sm` 14/500 | `fontSize.label-sm` → `text-label-sm font-medium` |
 | `spacing.lg` 24 | 카드 내부 `gap-6` (24px) |
 | `spacing.xl` 40 | 카드 `p-10` (40px) |
+| raw radius 8 (인풋·버튼 모서리) | `rounded-lg` |
+| raw gap 8 (라벨↔인풋) | `gap-2` |
+| raw 폭 400 (카드) | `w-[400px]` (스케일 불일치 → 임의값) |
 
 ## 구현 순서
 1. `tailwind.config.js`에 토큰 등록
