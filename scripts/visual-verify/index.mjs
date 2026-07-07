@@ -4,8 +4,10 @@ import { captureRender } from "./capture.mjs";
 import { resolveRunConfig, toProjectRelative } from "./config.mjs";
 import { diffImages } from "./diff.mjs";
 import { assertExactImageSize, normalizePng } from "./image.mjs";
+import { matchBridgeToDom } from "./match.mjs";
 import { collectRegions, decideStatus } from "./regions.mjs";
 import { writeReport } from "./report.mjs";
+import { collectStyleChecks, statusFromChecks } from "./style-checks.mjs";
 
 export async function runVisualVerify(args = {}) {
   const run = resolveRunConfig(args);
@@ -25,7 +27,7 @@ export async function runVisualVerify(args = {}) {
     label: "baseline"
   });
 
-  await captureRender({
+  const capture = await captureRender({
     url: run.url,
     selector: run.selector,
     viewport: run.viewport,
@@ -42,14 +44,23 @@ export async function runVisualVerify(args = {}) {
   });
   const confidence = roundMetric(diff.confidence);
   const regions = collectRegions(run.screen, diff, run.thresholds);
-  const status = decideStatus({ confidence, regions, thresholds: run.thresholds });
+  const pixelStatus = decideStatus({ confidence, regions, thresholds: run.thresholds });
+  const matches = matchBridgeToDom({ screen: run.screen, domSnapshot: capture.domSnapshot });
+  const checks = collectStyleChecks({ bridge: run.bridge, screen: run.screen, matches, domSnapshot: capture.domSnapshot });
+  const styleStatus = statusFromChecks(checks);
+  const status = pixelStatus;
 
   const result = {
+    version: "2.0",
     name: run.name,
     screen: run.breakpoint,
     status,
     passed: status === "pass",
     confidence,
+    statuses: {
+      pixel: pixelStatus,
+      style: styleStatus
+    },
     thresholds: run.thresholds,
     pixels: {
       total: diff.total,
@@ -70,7 +81,9 @@ export async function runVisualVerify(args = {}) {
       url: run.url,
       selector: run.selector
     },
-    regions
+    regions,
+    matches: matches.map(stripInternalMatchFields),
+    checks
   };
 
   writeFileSync(visualArtifact, `${JSON.stringify(result, null, 2)}\n`);
@@ -84,4 +97,21 @@ export function exitCodeForResult(result) {
 
 function roundMetric(value) {
   return Number(value.toFixed(6));
+}
+
+function stripInternalMatchFields(match) {
+  return {
+    nodeId: match.nodeId,
+    nodePath: match.nodePath,
+    nodeName: match.nodeName,
+    nodeType: match.nodeType,
+    matched: match.matched,
+    domId: match.domId,
+    domKind: match.domKind,
+    tag: match.tag,
+    text: match.text,
+    bbox: match.bbox,
+    confidence: match.confidence,
+    strategy: match.strategy
+  };
 }

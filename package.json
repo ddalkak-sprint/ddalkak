@@ -8,7 +8,8 @@
   },
   "scripts": {
     "visual:verify": "node scripts/visual-verify/cli.mjs",
-    "test:visual": "node scripts/visual-verify/cli.mjs"
+    "test:visual": "node scripts/visual-verify/cli.mjs",
+    "test:visual:engine": "node scripts/visual-verify/test-engine.mjs"
   },
   "dependencies": {
     "pixelmatch": "7.2.0",

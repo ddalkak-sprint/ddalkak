@@ -1,4 +1,5 @@
 import { chromium } from "playwright";
+import { collectDomSnapshot } from "./dom-snapshot.mjs";
 
 export class VisualVerifyCaptureError extends Error {
   constructor(message) {
@@ -10,6 +11,9 @@ export class VisualVerifyCaptureError extends Error {
 export async function captureRender({ url, selector, viewport, timeoutMs, outputPath }) {
   if (!url) {
     throw new VisualVerifyCaptureError("--url이 필요합니다. sandbox는 기본값 http://localhost:5173를 사용합니다.");
+  }
+  if (selector !== "body") {
+    throw new VisualVerifyCaptureError("v2.0은 body 전체 캡처만 지원합니다. --selector body를 사용하세요.");
   }
 
   const browser = await chromium.launch();
@@ -40,20 +44,19 @@ export async function captureRender({ url, selector, viewport, timeoutMs, output
     await page.waitForLoadState("networkidle", { timeout: Math.min(timeoutMs, 10000) }).catch(() => {});
     await page.evaluate(() => document.fonts?.ready).catch(() => {});
 
-    const target = selector === "body" ? page : page.locator(selector).first();
-    if (selector !== "body" && await target.count() === 0) {
-      throw new VisualVerifyCaptureError(`selector를 찾을 수 없습니다: ${selector}`);
-    }
+    let domSnapshot;
     try {
-      await target.screenshot({
+      await page.screenshot({
         path: outputPath,
         animations: "disabled",
         caret: "hide",
         scale: "css"
       });
+      domSnapshot = await collectDomSnapshot(page);
     } catch (error) {
       throw new VisualVerifyCaptureError(`screenshot 캡처 실패: ${error.message}`);
     }
+    return { domSnapshot };
   } finally {
     await browser.close();
   }
