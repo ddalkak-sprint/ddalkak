@@ -30,9 +30,8 @@
   - Tailwind 베이스: color/type 토큰을 `tailwind.config.js` `theme.extend`(colors/fontSize)에 등록한 뒤
     유틸 클래스(`bg-primary`, `text-heading-lg`)로 사용.
   - 다른 스택이면 design.md가 지정한 방식(CSS 변수/테마 객체)으로 등록·참조.
-- **수치는 절대 근사하지 않는다.** 브릿지의 px 값이 Tailwind 기본 스케일과 **정확히 일치할 때만**
-  스케일 클래스(48px→`h-12`, 24px→`gap-6`)를 쓰고, 일치하지 않으면 반드시 임의값(`gap-[30px]`, `w-[205px]`)으로 구현한다.
-  스펙에 없는 "가까운 값"으로 옮기는 것이 verify 불일치의 주요 원인이다.
+- **수치는 절대 근사하지 않는다.** 스펙에 없는 "가까운 값"으로 옮기는 것이 verify 불일치의 주요 원인 —
+  스케일/임의값 판정과 표기 형식은 §4-1을 따른다(정확 일치만 스케일 클래스, 그 외 임의값).
 - 브릿지 노드 `style`에 raw 값으로 남은 일회성 값은 해당 요소에만 인라인/임의값으로 적용하고 토큰으로 승격하지 않는다.
   단 raw 값이 등록된 토큰과 동일값이면 토큰 클래스를 쓴다.
 
@@ -135,7 +134,6 @@ plan-rules §2 매핑을 코드로 구현한다.
 - 기본 타깃은 React 웹. design.md의 "기술 스택"이 다른 것(Vue/Svelte/RN/Flutter 등)을 지정하면 그 스택의 관용 패턴으로 생성한다:
   컴포넌트 단위·스타일 적용 방식·파일 확장자·라우팅을 해당 스택에 맞춘다.
   design.md가 없으면 package.json 의존성으로 스택을 먼저 판별한다(`vue` 존재 → Vue 등).
-- 어느 스택이든 공통 원칙은 동일: plan 파일 계획 준수, 토큰 매핑 구현, 재사용 우선, 범위 제한.
 - **스택별 관용 대응(결정론)**: 이 문서의 React 용어는 다음으로 치환한다 —
   index re-export 경로(Vue는 `.vue` 확장자 명시), 콘텐츠 슬롯(`children`↔`<slot>`),
   스타일 passthrough(`className`↔class fallthrough), 조건부 클래스 표기(§4-1), 타입 체크 도구(`tsc`↔`vue-tsc`).
