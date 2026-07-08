@@ -16,6 +16,10 @@
 //  warning(완결성 — code가 즉석 환산/발명하게 되는 지점, plan-rules §4):
 //   - 브릿지가 참조한 토큰이 토큰 매핑 표에 없음
 //   - 브릿지 raw 시각값(radius/gap/padding/고정 폭·높이)이 표에 없음
+//   - 브릿지 raw 색(fill/stroke/effect 리터럴)이 plan에 없음 — 근접값(rgba 0.5 vs 0.54)까지 각각 (plan-rules §4)
+//   - drop-shadow가 있는데 plan에 shadow 표기가 없음 (plan-rules §4·§4-1)
+//   - text 노드 인라인 타이포의 lineHeight가 plan에 없음 (텍스트→토큰·색 바인딩, plan-rules §3)
+//   - 겹치는 mode:"none" 서브트리(일러스트)가 있는데 plan에 절대좌표(left-[/top-[) 표가 없음 (plan-rules §2-1)
 //   - 브릿지 컴포넌트(mappedCodeComponent/componentName/suggestedComponent)가 plan에 언급 없음
 //   - 페이지 등록(진입점 "수정" 행) 흔적 없음 (plan-rules §1)
 //   - 브릿지 미해결 불일치가 있는데 plan에 ⚠ 섹션이 없음
@@ -152,8 +156,32 @@ function tokenPresent(dottedPath, resolvedValue) {
 if (bridge) {
   const referencedTokens = new Set();   // '@a.b.c' 참조 경로
   const rawValues = new Set();           // radius/gap/padding/고정 폭·높이 raw 리터럴
+  const rawColors = new Set();           // fill/stroke/effect의 raw 색 리터럴(#hex·rgba)
+  const shadows = [];                    // drop-shadow effect 원본(그림자 표기 완결성용)
+  const inlineLineHeights = new Set();   // text 노드 인라인 타이포의 lineHeight(바인딩 완결성용)
+  const illustrations = new Set();       // 자식 bbox가 겹치는 mode:"none" 서브트리 이름(절대배치)
   const components = new Set();           // 컴포넌트 이름 후보
   const pageNames = new Set();            // screen → PascalCase 페이지명 (variantGroup 중복 제거)
+
+  const isColorLiteral = (v) => typeof v === "string" && /^(#[0-9a-fA-F]{3,8}|rgba?\()/.test(v.trim());
+  function collectColors(value) {
+    if (isColorLiteral(value)) rawColors.add(value.trim());
+    else if (Array.isArray(value)) value.forEach(collectColors);
+    else if (value && typeof value === "object") Object.values(value).forEach(collectColors);
+  }
+  // 두 노드 bbox([x,y,w,h])가 실제 면적으로 겹치는지 (일러스트 절대배치 판정, plan-rules §2-1).
+  function overlaps(a, b) {
+    if (!Array.isArray(a) || !Array.isArray(b) || a.length < 4 || b.length < 4) return false;
+    const [ax, ay, aw, ah] = a, [bx, by, bw, bh] = b;
+    return ax < bx + bw && bx < ax + aw && ay < by + bh && by < ay + ah;
+  }
+  function childrenOverlap(children) {
+    const boxes = (children ?? []).map((c) => c.bbox).filter(Boolean);
+    for (let i = 0; i < boxes.length; i++)
+      for (let j = i + 1; j < boxes.length; j++)
+        if (overlaps(boxes[i], boxes[j])) return true;
+    return false;
+  }
 
   function pascal(name) {
     return String(name ?? "")
@@ -174,6 +202,7 @@ if (bridge) {
     for (const node of nodes ?? []) {
       collectRefs(node.style);
       collectRefs(node.layout);
+      collectColors(node.style);
       // raw 리터럴(비-@ref) 시각값
       addRaw(node.style?.cornerRadius);
       addRaw(node.layout?.gap);
@@ -181,6 +210,19 @@ if (bridge) {
       // 명시적으로 고정 크기인 축의 bbox 치수만 (폭/높이 확정 필요값)
       if (node.layout?.sizing?.horizontal === "fixed") addRaw(node.bbox?.[2]);
       if (node.layout?.sizing?.vertical === "fixed") addRaw(node.bbox?.[3]);
+      // 그림자(effects) — 표기 완결성 (plan-rules §4·§4-1)
+      for (const e of node.style?.effects ?? []) {
+        if (e?.type === "drop-shadow" || e?.type === "inner-shadow") shadows.push(e);
+      }
+      // text 노드 인라인 타이포의 lineHeight — 토큰이 아닌 raw 타이포 바인딩 (plan-rules §3)
+      const font = node.style?.font;
+      if (font && typeof font === "object" && typeof font.lineHeight === "number") {
+        inlineLineHeights.add(Math.round(font.lineHeight));
+      }
+      // 겹치는 mode:"none" 서브트리 = 일러스트 절대배치 (plan-rules §2-1)
+      if (node.layout?.mode === "none" && (node.children?.length ?? 0) >= 2 && childrenOverlap(node.children)) {
+        illustrations.add(node.name || node.type || "(unnamed)");
+      }
       // 컴포넌트 이름 후보
       if (node.mappedCodeComponent) components.add(basename(node.mappedCodeComponent));
       if (node.componentName) components.add(node.componentName.split("/")[0]);
@@ -219,6 +261,45 @@ if (bridge) {
   const missingRaw = [...rawValues].filter((v) => !numberPresent(v)).sort((a, b) => a - b);
   for (const v of missingRaw) {
     warnings.push(`raw 시각값 ${v}(radius/gap/padding/고정폭 중 하나)가 토큰 매핑 표에 없음 — 값→클래스 환산이 plan에 확정되지 않음 (plan-rules §4)`);
+  }
+
+  // 공백을 제거한 plan 전문 — 색·좌표·그림자는 토큰 표 밖(바인딩 섹션 등)에도 나오므로 전문에서 찾고,
+  // rgba(0, 0, 0, 0.5) ↔ rgba(0,0,0,0.5) 같은 공백차를 흡수한다.
+  const normColor = (s) => s.toLowerCase().replace(/\s+/g, "");
+  const planNoSpace = normColor(planText);
+
+  // 등록 토큰과 같은 값의 raw 색은 그 토큰 클래스로 표현될 수 있으므로(§4) 예외 처리한다.
+  const resolvedColorTokens = new Map(); // 정규화색 → 토큰 경로
+  (function flattenColors(obj, path) {
+    if (isColorLiteral(obj)) resolvedColorTokens.set(normColor(obj), path);
+    else if (obj && typeof obj === "object")
+      for (const [k, v] of Object.entries(obj)) flattenColors(v, path ? `${path}.${k}` : k);
+  })(bridge.tokens?.color, "color");
+
+  // 5-2a. raw 색 완결성 (근접값도 각각 — rgba 0.5 vs 0.54)
+  const missingColors = [...rawColors].filter((c) => {
+    if (planNoSpace.includes(normColor(c))) return false;
+    const tok = resolvedColorTokens.get(normColor(c)); // 동일값 토큰이 plan에 있으면 그 클래스로 표현된 것
+    return !(tok && tokenPresent(tok, resolveToken(tok.replace(/^tokens?\./, ""))));
+  }).sort();
+  for (const c of missingColors) {
+    warnings.push(`raw 색 '${c}'(fill/stroke/effect)가 plan에 없음 — code가 색을 브릿지에서 다시 읽게 됨 (plan-rules §4). 근접값은 하나로 뭉개지 않는다`);
+  }
+
+  // 5-2b. 그림자 표기 완결성
+  if (shadows.length && !/shadow|box-shadow/.test(planNoSpace)) {
+    warnings.push(`drop/inner-shadow ${shadows.length}건이 있으나 plan에 그림자 표기(shadow-[…])가 없음 — code가 그림자를 브릿지에서 다시 읽음 (plan-rules §4·§4-1: x_y_blur_spread_color 4성분)`);
+  }
+
+  // 5-2c. 인라인 타이포 lineHeight 바인딩 완결성 (등록 토큰이 아닌 raw 폰트)
+  const missingLh = [...inlineLineHeights].filter((v) => !numberPresent(v)).sort((a, b) => a - b);
+  for (const v of missingLh) {
+    warnings.push(`인라인 타이포 lineHeight ${v}가 plan에 없음 — 텍스트→토큰·색 바인딩이 확정되지 않아 code가 브릿지를 다시 읽음 (plan-rules §3)`);
+  }
+
+  // 5-2d. 일러스트 절대배치 좌표 표 완결성
+  if (illustrations.size && !/left-\[|top-\[/.test(planNoSpace)) {
+    warnings.push(`겹치는 일러스트 서브트리(${[...illustrations].join(", ")})가 있으나 plan에 절대좌표 표(left-[…]/top-[…])가 없음 — code가 서브트리 좌표마다 브릿지를 다시 연다 (plan-rules §2-1)`);
   }
 
   // 5-3. 컴포넌트 커버리지
