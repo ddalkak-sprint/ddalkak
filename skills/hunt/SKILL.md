@@ -31,12 +31,13 @@ description: 자동사냥 — 내게 배정된 GitHub 이슈를 골라 브랜치
    - 샌드박스 코드 → `cd sandbox && npm run dev` 렌더 확인
    - `shared/examples/` 포맷이 바뀌면 예시도 같이 갱신 (GUIDE.md 규칙 1)
 6. **커밋** — `Feat:`/`Fix:`/`Chore:`/`Docs:` 프리픽스, 한국어로 무엇을·왜.
-7. **PR**:
+7. **PR**: 본문은 `.github/PULL_REQUEST_TEMPLATE.md` 양식(요약 / 검증 / 관련 이슈)을 그대로 채운다.
    ```bash
    git push -u origin <브랜치>
-   gh pr create --title "<커밋 제목과 동일>" --body "<요약 + 검증 방법/결과 + Closes #<N>>"
+   gh pr create --title "<커밋 제목과 동일>" --body "<PR 템플릿을 채운 본문>"
    ```
-   - `Closes #<N>` 필수. 라벨은 labeler, 리뷰어는 CODEOWNERS가 자동 처리.
+   - 요약은 무엇을·왜, 검증은 돌려본 명령·결과, 관련 이슈에 `Closes #<N>`(필수)를 적는다.
+   - 섹션 구조는 템플릿 그대로 두고 내용만 채운다. 라벨은 labeler, 리뷰어는 CODEOWNERS가 자동 처리.
 8. **보고** — PR URL, 검증 결과, 다음 배정 이슈가 남아 있으면 목록을 알려준다.
 
 ## 규칙
