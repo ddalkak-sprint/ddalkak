@@ -30,7 +30,10 @@ description: plan.md를 읽어 실제 코드를 생성한다. 파일 계획·구
 2. 한 컨텍스트에서 구현 순서대로 진행: 토큰/설정 → 잎 컴포넌트 → 상위·페이지 조립 → 에셋 → 레이아웃 확인 (§2·§11).
 3. `mappedCodeComponent`/재사용 표기 컴포넌트는 import, 신규 표기만 작성 (§3). 토큰은 매핑 표대로 구현 (§4).
 4. 노드/레이아웃을 흐름 레이아웃 JSX로 구현(bbox는 참조값), 에셋 배치 (§5·§6), 컴포넌트 작성 규칙 준수 (§7).
-5. **타입 체크**가 필수 게이트(§9) — full 프로덕션 빌드는 반복 게이트에서 생략. 생성·수정 파일 목록, 렌더 방법(`npm run dev`), 다음 단계(verify)를 사용자에게 보고.
+5. **타입 체크**가 필수 게이트(§9) — full 프로덕션 빌드는 반복 게이트에서 생략.
+6. **정적 게이트**: `node ${CLAUDE_PLUGIN_ROOT}/scripts/validate-code.mjs <plan.md>` 실행(§9). error는 고쳐 재실행하고,
+   warning으로 나온 `.ddalkak/reports/<name>.code-gaps.json`(plan에 없어 즉석 환산한 값)은 plan 완결성 피드백으로 남긴다.
+7. 생성·수정 파일 목록, data-dk 커버리지·gap 목록, 렌더 방법(`npm run dev`), 다음 단계(verify)를 사용자에게 보고.
 
 ## 절차 (fix — code-rules §10)
 1. `.ddalkak/reports/<name>.<breakpoint>.visual.json` 로드 → `checks.items[]`에서 `status: "fail"` 항목 수집 (§10-1).

@@ -168,6 +168,11 @@ plan-rules §2 매핑을 코드로 구현한다.
   캡처하지 프로덕션 번들 산출물을 쓰지 않으므로, 타입 체크 통과 + dev 렌더 확인으로 다음 단계(verify)로 넘어간다.
   `vite build` 같은 번들링은 매 라운드 돌리지 않는다(fix 수렴 루프에서 라운드마다 반복되면 낭비).
   번들 전용 설정 등 **프로덕션 빌드에서만 드러나는 오류**가 우려되는 프로젝트에서만 파이프라인 종료 직전 full build를 1회 확인한다.
+- **정적 게이트(verify 앞단, 저비용)**: 타입 체크 통과 후 `node ${CLAUDE_PLUGIN_ROOT}/scripts/validate-code.mjs <plan.md>`를
+  실행한다(plan 단계의 validate-plan.mjs와 대칭 — LLM 없이 결정론적으로 plan↔code 드리프트를 잡아 무거운 verify 앞에서 거른다).
+  - error(파일 계획의 신규/수정 파일 부재, data-dk 앵커 전면 누락, data-dk 경로 오배치)는 고쳐서 재실행한다 — 남긴 채 verify로 넘어가지 않는다.
+  - warning(코드의 arbitrary 시각값이 plan에 없음 = §4 즉석 환산 신호)은 `.ddalkak/reports/<name>.code-gaps.json`으로 떨어진다.
+    이 목록이 §4 완결성 피드백의 기계 판이며, 다음 plan 재실행 때 토큰/좌표 표로 흡수한다(§11 plan 완결성 레버).
 - 이후 사용자에게 요약한다:
   - 생성/수정한 파일 목록(경로 + 신규·수정)과 빌드 결과.
   - 검증 보조 정보: `data-dk` 부착 노드 수(§4-3), plan 표에 없어 §4-1로 즉석 환산한 값이 있으면 그 목록
