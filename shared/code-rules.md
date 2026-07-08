@@ -170,3 +170,46 @@ plan-rules §2 매핑을 코드로 구현한다.
   - plan 대비 벗어난 점이 있으면 그 사유(예: 기존 파일과 충돌해 통합).
   - 렌더 확인 방법 안내(예: `npm run dev`).
   - 다음 단계는 verify(code ↔ figma 대조)임을 안내.
+
+## 10. fix 모드 — verify 리포트로 짚어진 곳만 고친다
+verify(4단계)가 불일치를 찾으면, code는 **새로 설계하지 않고** 그 리포트가 속성 단위로 짚은 지점만
+규칙대로 되돌린다. "AI가 어긴 규칙(§4·§4-1·§4-2)을 규칙대로 다시" 하는 것이지 재판단이 아니다.
+전체 재생성 금지(§2)는 fix 모드에서 더 엄격히 적용된다.
+
+### 10-1. 입력 — verify 산출물
+- `.ddalkak/reports/<name>.<breakpoint>.visual.json`을 읽는다(breakpoint별 파일 — 반응형은 각각 처리).
+- `checks.items[]`에서 `status: "fail"`인 항목이 수정 대상 후보다. 각 항목은
+  `{ id, nodePath, kind, expected, actual, delta, severity }` — "어느 노드의 어느 속성이 기대 X인데 실제 Y".
+- `expected`/`actual`는 해석된 실측 단위다(px·rgb). `expected`가 **되돌릴 목표값**이다 — 여기서 새 값을 지어내지 않는다.
+
+### 10-2. 위치 특정 — nodePath → 소스 요소 (data-dk로 확정)
+`checks.items[].nodePath`(이름 경로)만으로는 소스를 못 찾는다. 같은 리포트의 `matches[]`와 **`nodePath`로 조인**해
+그 노드의 `dkPath`(인덱스 경로)·`dataDk`·`strategy`·`confidence`를 얻는다.
+- `matches[]` 항목의 `strategy === "data-dk-exact"`(= `dataDk`가 `dkPath`와 일치)면 → 소스에서 `data-dk="<dkPath>"`
+  요소를 정확히 특정해 고친다(신뢰도 high). §4-3이 심은 앵커가 이 경로를 성립시킨다.
+- 그렇지 않으면(fallback 매칭·저신뢰·`dataDk` 비어 있음) → **자동 수정에서 제외**하고 사람에게 보고한다(오수정 위험).
+  이때 원인이 앵커 누락이면(§4-3 미부착) 먼저 `data-dk`를 붙이는 것이 근본 수정이다.
+
+### 10-3. kind별 수정 액션 (짚어진 속성 1개만 교체)
+- `radius` → §4-1 표기 규약대로 `expected`에 해당하는 클래스로 교체(pill 판정 포함).
+- `fill.color`/`text.color`/`stroke.color`/`run.color:*` → §4대로 등록 토큰 클래스 또는 원문 hex로 교체.
+- `font.size`/`font.weight`/`font.lineHeight`/`run.font.*` → 토큰 fontSize/weight 또는 §4-1 표기로 교체.
+- `stroke.width` → §4-1 스케일/임의값 규약대로 border 폭 클래스로 교체.
+- `geometry.x/y/width/height` → 절대좌표로 박지 않는다. 원인(부모 `gap`/`padding`/`sizing`·§5 bbox 잔차)을 되짚어
+  **명시값(§4-2)** 기준으로 복원한다. 폭·높이 고정 누락이면 §5 크기 표현대로 클래스를 준다.
+  원인이 불명확하면(레이아웃 구조 자체 문제) 자동 수정하지 말고 사람에게 보고한다.
+- `match`/`run.match`(warn) → 대개 앵커 미부착·요소 누락. §4-3 앵커부터 붙이고, 그래도 남으면 보고.
+
+### 10-4. 안전장치 & 수렴
+- **범위**: 짚어진 요소만, plan "파일 계획" 범위 내 파일만 수정한다. 표에 없는 파일·짚이지 않은 요소는 건드리지 않는다.
+- **재빌드/재검증**: 패치 후 빌드(§9) → verify를 다시 돌려 해당 항목이 해소됐는지 확인한다.
+- **수렴/중단**: 재검증에서 통과면 종료. 같은 항목이 **개선(`delta` 감소) 없이 2회 연속 실패**하면 중단하고
+  사람에게 보고한다(무한 루프·발산 방지). 상한은 기본 3회.
+- **자동 적용 기준(기본값)**: `status: "fail"` + `data-dk-exact` 매칭 항목만 자동 수정한다.
+  warn·advisory·저신뢰 매칭은 보고만 하고 손대지 않는다(사람 확인). 이 임계값은 프로젝트에서 조정 가능하다.
+- **결정론**: 같은 verify 입력 → 같은 패치. `expected`를 목표로 §4-1 규약을 그대로 적용하므로 재실행에 안정적이다.
+
+### 10-5. fix 후 보고
+- 고친 항목(`id`/`kind`/`expected`→적용값)과 수정 파일, 재검증 결과.
+- 자동 수정에서 **제외한 항목**과 사유(저신뢰 매칭·구조 문제 등) — 사람이 판단할 목록.
+- 수렴 못 하고 중단했으면 남은 실패 항목과 마지막 `delta`.

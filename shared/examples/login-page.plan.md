@@ -24,6 +24,7 @@
 | `src/assets/login-page/logo.svg` | 신규 | 브릿지 `asset-logo` export |
 | `tailwind.config.js` | 수정 | color/type 토큰 등록 |
 
+## 디자인 토큰 매핑
 등록 토큰 + 화면에 쓰인 비토큰 raw 값을 모두 최종 코드 표현으로 확정한다 (code는 복사만 — plan-rules §4).
 
 | 브릿지 값 | 코드 표현 (최종) |
@@ -33,14 +34,17 @@
 | `color.text-strong` #111827 | `colors.text-strong` → `text-text-strong` |
 | `color.text-muted` #6B7280 | `colors.text-muted` → `text-text-muted` |
 | `color.border` #E5E7EB | `colors.border` → `border-border` |
+| `color.surface` #FFFFFF | `colors.surface` → `bg-surface` (카드 배경) |
 | `type.heading-lg` 28/700 | `fontSize.heading-lg` → `text-heading-lg font-bold` |
 | `type.body-md` 16/400 | `fontSize.body-md` → `text-body-md` |
 | `type.label-sm` 14/500 | `fontSize.label-sm` → `text-label-sm font-medium` |
 | `spacing.lg` 24 | 카드 내부 `gap-6` (24px) |
 | `spacing.xl` 40 | 카드 `p-10` (40px) |
-| raw radius 8 (인풋·버튼 모서리) | `rounded-lg` |
+| `radius.sm` 8 (인풋·버튼 모서리) | `rounded-lg` |
+| `radius.md` 12 (카드 모서리) | `rounded-xl` |
 | raw gap 8 (라벨↔인풋) | `gap-2` |
 | raw 폭 400 (카드) | `w-[400px]` (스케일 불일치 → 임의값) |
+| `effect.card` 0/4/12/0 rgba(0,0,0,0.06) | `shadow-[0_4px_12px_0_rgba(0,0,0,0.06)]` (4성분 전부 — §4-1) |
 
 ## 구현 순서
 1. `tailwind.config.js`에 토큰 등록
