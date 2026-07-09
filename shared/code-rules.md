@@ -92,6 +92,7 @@ plan-rules §2 매핑을 코드로 구현한다.
   `gap`→`gap-*`, `padding`→`p*`, `primaryAxisAlign`/`counterAxisAlign`→`justify-*`/`items-*`, `style`(background/radius/shadow)→클래스.
 - `text` → 텍스트 요소. `content`를 그대로 넣고 `style.token`(타이포)·`style.color`를 클래스로.
   `runs[]`가 있으면 run별 `<span>`으로 분할해 서식(굵기 등)을 구현. `style.role: "link"`면 `<a>`.
+  단 **`content`가 이모지 글리프뿐인 text 노드는 텍스트가 아니라 이미지로 렌더**한다(§6-1, plan-rules §2-3).
 - `image`/`vector` + `ref` → `assets[]`에서 배치한 파일을 import 해 `<img>`로. 크기는 bbox의 w/h 참조.
 - `line` → 부모의 `border-*` 또는 `<hr>`. `shape`/`ellipse` → 스타일된 `div`(ellipse는 `rounded-full`).
 - `bbox`는 **참조값**이다. 절대좌표(`position: absolute`, `top/left`)로 옮기지 말고 부모 흐름 레이아웃으로 구현한다.
@@ -123,6 +124,21 @@ plan-rules §2 매핑을 코드로 구현한다.
 - 브릿지 `assets[]`의 export 파일(`.ddalkak/assets/<name>/...`)을 plan이 지정한 프로젝트 경로(기본 `src/assets/<name>/`)로 복사·배치하고,
   이를 사용하는 컴포넌트에서 import 한다.
 - `kind: "screenshot"` 에셋은 verify 전용 — 프로젝트로 복사하지 않는다.
+
+### 6-1. 이모지 글리프 에셋 (emoji-extract)
+`content`가 이모지 글리프뿐인 text 노드(plan-rules §2-3)는 텍스트로 렌더하면 브라우저·OS마다 시스템 이모지로
+폴백돼 디자인과 다르게, 환경마다도 다르게 그려진다. 벡터 이모지 세트(SVG)로 고정해 `<img>`로 렌더한다 —
+벡터라 모든 해상도에서 선명하고 배경이 투명하다.
+- **생성**: `node ${CLAUDE_PLUGIN_ROOT}/scripts/emoji-extract.mjs --project <p> --name <name> [--set twemoji]`.
+  이 스크립트는 이모지 노드를 찾아 코드포인트별 SVG를 공개 세트(기본 Twemoji, `--set noto` 등)에서 받아
+  `.ddalkak/assets/<name>/`와 `src/assets/<name>/`에 함께 쓰고, bridge `assets[]`에 `kind: "vector"`로 등록하며
+  노드에 `ref`를 단다. code는 그 SVG 경로를 import 해 `<img src>`로 렌더한다.
+- **크기**: 컴포넌트에서 leaf bbox의 w/h를 클래스로 준다(§4-1 스케일). 같은 이모지가 여러 크기로 쓰이면 SVG 하나를
+  크기만 달리해 재사용한다(벡터라 무손실).
+- **컴포넌트 API**: 이모지를 받는 컴포넌트는 텍스트가 아니라 이미지 src prop(예: `emojiSrc`)으로 받는다(§7-1 passthrough와 별개의 의미 값).
+- **verify 한계**: 세트 글리프는 Figma가 쓴 이모지와 모양이 완전히 같지 않아 이모지 영역 픽셀 불일치는 남는다.
+  이는 Figma↔브라우저 래스터의 본질적 차이라 code로 못 없앤다 — fix 모드로 되돌릴 대상이 아니며, 게이트를
+  콘텐츠 인지형으로 다루는 검증쪽 몫이다(§10-2 폴백 매칭 제외와 같은 맥락).
 
 ## 7. 컴포넌트 작성 규칙 (design.md 4장 기본 베이스 — 예시는 React, 다른 스택은 §8 대응표로 치환)
 - props는 `interface <Component>Props`로 명시. `any` 금지.
