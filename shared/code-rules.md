@@ -92,6 +92,7 @@ plan-rules §2 매핑을 코드로 구현한다.
   `gap`→`gap-*`, `padding`→`p*`, `primaryAxisAlign`/`counterAxisAlign`→`justify-*`/`items-*`, `style`(background/radius/shadow)→클래스.
 - `text` → 텍스트 요소. `content`를 그대로 넣고 `style.token`(타이포)·`style.color`를 클래스로.
   `runs[]`가 있으면 run별 `<span>`으로 분할해 서식(굵기 등)을 구현. `style.role: "link"`면 `<a>`.
+  단 **`content`가 이모지 글리프뿐인 text 노드는 텍스트가 아니라 이미지로 렌더**한다(§6-1, plan-rules §2-3).
 - `image`/`vector` + `ref` → `assets[]`에서 배치한 파일을 import 해 `<img>`로. 크기는 bbox의 w/h 참조.
 - `line` → 부모의 `border-*` 또는 `<hr>`. `shape`/`ellipse` → 스타일된 `div`(ellipse는 `rounded-full`).
 - `bbox`는 **참조값**이다. 절대좌표(`position: absolute`, `top/left`)로 옮기지 말고 부모 흐름 레이아웃으로 구현한다.
@@ -123,6 +124,21 @@ plan-rules §2 매핑을 코드로 구현한다.
 - 브릿지 `assets[]`의 export 파일(`.ddalkak/assets/<name>/...`)을 plan이 지정한 프로젝트 경로(기본 `src/assets/<name>/`)로 복사·배치하고,
   이를 사용하는 컴포넌트에서 import 한다.
 - `kind: "screenshot"` 에셋은 verify 전용 — 프로젝트로 복사하지 않는다.
+
+### 6-1. 이모지 글리프 에셋 (emoji-extract)
+`content`가 이모지 글리프뿐인 text 노드(plan-rules §2-3)는 텍스트로 렌더하면 브라우저·OS마다 시스템 이모지로
+폴백돼 디자인과 다르게, 환경마다도 다르게 그려진다. 벡터 이모지 세트(SVG)로 고정해 `<img>`로 렌더한다 —
+벡터라 모든 해상도에서 선명하고 배경이 투명하다.
+- **생성**: `node ${CLAUDE_PLUGIN_ROOT}/scripts/emoji-extract.mjs --project <p> --name <name> [--set twemoji]`.
+  이 스크립트는 이모지 노드를 찾아 코드포인트별 SVG를 공개 세트(기본 Twemoji, `--set noto` 등)에서 받아
+  `.ddalkak/assets/<name>/`와 `src/assets/<name>/`에 함께 쓰고, bridge `assets[]`에 `kind: "vector"`로 등록하며
+  노드에 `ref`를 단다. code는 그 SVG 경로를 import 해 `<img src>`로 렌더한다.
+- **크기**: 컴포넌트에서 leaf bbox의 w/h를 클래스로 준다(§4-1 스케일). 같은 이모지가 여러 크기로 쓰이면 SVG 하나를
+  크기만 달리해 재사용한다(벡터라 무손실).
+- **컴포넌트 API**: 이모지를 받는 컴포넌트는 텍스트가 아니라 이미지 src prop(예: `emojiSrc`)으로 받는다(§7-1 passthrough와 별개의 의미 값).
+- **verify 한계**: 세트 글리프는 Figma가 쓴 이모지와 모양이 완전히 같지 않아 이모지 영역 픽셀 불일치는 남는다.
+  이는 Figma↔브라우저 래스터의 본질적 차이라 code로 못 없앤다 — fix 모드로 되돌릴 대상이 아니며, 게이트를
+  콘텐츠 인지형으로 다루는 검증쪽 몫이다(§10-2 폴백 매칭 제외와 같은 맥락).
 
 ## 7. 컴포넌트 작성 규칙 (design.md 4장 기본 베이스 — 예시는 React, 다른 스택은 §8 대응표로 치환)
 - props는 `interface <Component>Props`로 명시. `any` 금지.
@@ -160,9 +176,19 @@ plan-rules §2 매핑을 코드로 구현한다.
   누락되면 빌드는 통과하고 CSS만 조용히 비는 실패가 된다.
 
 ## 9. 빌드 검증 & 생성 후 보고
-- **타입 체크·빌드는 필수다.** 구현을 마치면 반드시 빌드(예: `npm run build`)를 실행한다.
+- **타입 체크가 필수 게이트다.** 구현을 마치면 반드시 타입 체크를 실행한다
+  (프로젝트의 `tsc`/`vue-tsc` 단계 — `tsc --noEmit`, project references면 `tsc -b`, Vue는 `vue-tsc --noEmit`).
   실패하면 원인을 수정하고 재시도한다(최대 3회). 3회 후에도 실패하면 실패 상태와 원인을 그대로 보고한다
   — 통과한 척 넘어가지 않는다.
+- **반복 게이트에서 full 프로덕션 빌드(번들링)는 생략한다.** verify(4단계)는 **dev 서버**(`localhost:5173`)를
+  캡처하지 프로덕션 번들 산출물을 쓰지 않으므로, 타입 체크 통과 + dev 렌더 확인으로 다음 단계(verify)로 넘어간다.
+  `vite build` 같은 번들링은 매 라운드 돌리지 않는다(fix 수렴 루프에서 라운드마다 반복되면 낭비).
+  번들 전용 설정 등 **프로덕션 빌드에서만 드러나는 오류**가 우려되는 프로젝트에서만 파이프라인 종료 직전 full build를 1회 확인한다.
+- **정적 게이트(verify 앞단, 저비용)**: 타입 체크 통과 후 `node ${CLAUDE_PLUGIN_ROOT}/scripts/validate-code.mjs <plan.md>`를
+  실행한다(plan 단계의 validate-plan.mjs와 대칭 — LLM 없이 결정론적으로 plan↔code 드리프트를 잡아 무거운 verify 앞에서 거른다).
+  - error(파일 계획의 신규/수정 파일 부재, data-dk 앵커 전면 누락, data-dk 경로 오배치)는 고쳐서 재실행한다 — 남긴 채 verify로 넘어가지 않는다.
+  - warning(코드의 arbitrary 시각값이 plan에 없음 = §4 즉석 환산 신호)은 `.ddalkak/reports/<name>.code-gaps.json`으로 떨어진다.
+    이 목록이 §4 완결성 피드백의 기계 판이며, 다음 plan 재실행 때 토큰/좌표 표로 흡수한다(§11 plan 완결성 레버).
 - 이후 사용자에게 요약한다:
   - 생성/수정한 파일 목록(경로 + 신규·수정)과 빌드 결과.
   - 검증 보조 정보: `data-dk` 부착 노드 수(§4-3), plan 표에 없어 §4-1로 즉석 환산한 값이 있으면 그 목록
@@ -213,3 +239,20 @@ verify(4단계)가 불일치를 찾으면, code는 **새로 설계하지 않고*
 - 고친 항목(`id`/`kind`/`expected`→적용값)과 수정 파일, 재검증 결과.
 - 자동 수정에서 **제외한 항목**과 사유(저신뢰 매칭·구조 문제 등) — 사람이 판단할 목록.
 - 수렴 못 하고 중단했으면 남은 실패 항목과 마지막 `delta`.
+
+## 11. 실행 모델 — 단일 컨텍스트 순차 생성 (실측 근거)
+생성 모드는 **한 컨텍스트에서 순차로** 파일을 만든다. 잎 컴포넌트를 서브에이전트로 병렬 fan-out하는 방식을
+pc-home(잎 5 + 조립 1)에서 실측한 결과 **더 느렸다**(순차 단일 컨텍스트 ~9분 → 병렬 fan-out ~22분).
+원인은 세 가지이며, 다음 재설계 때 이 함정을 피한다.
+- **병목은 잎이 아니라 페이지 조립(Phase C)이다.** 잎 생성은 조립에 비해 짧고, 조립은 data-dk 경로·절대배치·
+  좌우 배치를 화면 전체 맥락에서 한 번에 풀어야 해서 본질적으로 순차다. 잎을 병렬화해도 병목이 그대로 남는다.
+- **서브에이전트마다 컨텍스트를 다시 로드한다.** 각자 plan·code-rules·브릿지(수십 KB)를 콜드로 다시 읽어,
+  단일 컨텍스트가 한 번만 치르는 읽기 비용을 N번 중복 지불한다. 이 오버헤드가 병렬 이득을 넘어선다.
+- **격리된 에이전트는 서로 다른 선택을 한다.** 네이밍·주석·속성 순서·prop 타입·레이아웃 표현(`justify-between`↔`gap-[Npx]`)
+  등 §4-1이 고정하지 않는 자유도에서 에이전트별로 갈려 재실행 결정론이 **더** 나빠진다(병렬화가 통일이 아니라 분산을 낳음).
+
+따라서 시간 개선의 실효 레버는 fan-out이 아니라 다음이다.
+- **plan 완결성**(plan 단계): code가 브릿지를 다시 열게 만드는 값(버튼 라벨 폰트·카드 내부 좌표·패널 폭·그림자 등,
+  §4 완결성 피드백으로 반복 관측되는 항목)을 plan 표로 흡수한다. 그러면 code는 §1.3의 브릿지 재열람을 건너뛰어
+  컨텍스트 로드가 줄고, 조립도 표 복사에 가까워져 빨라지며 결정론도 함께 오른다.
+- **빌드 게이트 경량화**(§9): 반복 게이트에서 full 프로덕션 빌드를 생략(타입 체크만)해 fix 수렴 루프의 라운드 비용을 줄인다.
