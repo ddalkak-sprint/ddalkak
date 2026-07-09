@@ -1,0 +1,46 @@
+{
+  "$comment": "딸깍 런 계측 — 단계별 벽시계 시간과 토큰 추정(파일 I/O bytes/4 근사). 개선 하네스 설계의 첫 실측.",
+  "runs": [
+    {
+      "runId": "2026-07-09-run4-bridge-mcp-verify",
+      "runMode": "manual-investigation",
+      "context": "브릿지 전용 — 픽셀 매칭 자동화(bridge-autofix.mjs) 검증 목적으로 원본(수정 전) bbox를 라이브 get_design_context(nodeId 9:571, img_01)로 개별 재확인",
+      "finding": "카드 3장 중 실제 오류는 add-card x좌표 1개뿐 — 나머지(message-card 위치·크기, avatar pill, tag 색)는 원본이 이미 정확했음. 최초 브릿지는 전체 섹션 1회 get_design_context 호출(codeSummary, 좌표 없음)만으로 leaf를 재구성해 좌표를 지어냈던 것이 원인. 카드 내부 구분선(#E1E1E1) 미캡처도 이번에 발견.",
+      "mcpCalls": { "attempted": 3, "succeeded": 1, "rateLimited": 2, "targets": ["9:571(img_01, 성공)", "9:579(img_02, rate limit)", "9:586(header, rate limit)"] },
+      "action": "rules §8-1/agents/figma-extractor.md 갱신 — leaf별 개별 get_design_context 호출을 1순위로, bridge-autofix.mjs(픽셀 매칭)는 그 호출이 실패/rate-limit일 때만 쓰는 차선으로 재배치. bridge-autofix.mjs에 배경 비구분·동일 색/크기 형제 감지 가드 2개 추가",
+      "openItem": "img_02(9:579), header(9:586) 개별 재호출 — MCP 한도 풀리면 재시도, 현재 confidence:0.7로 유보 중"
+    },
+    {
+      "runId": "2026-07-09-run3-pchome",
+      "runMode": "auto",
+      "context": "브릿지 개선 적용 + 지문 스킵 + compact 저장 + 폰트 사용자 슬롯. 주의: plan/code는 직전 런 산출물이 세션 컨텍스트에 남은 warm 상태라 콜드 런보다 빠름",
+      "stages": [
+        { "stage": "reset", "wallSec": 15.5, "note": "sandbox 초기화(보정 브릿지·에셋 유지)" },
+        { "stage": "design-md", "wallSec": 0.1, "estTokensRead": 400, "note": "존재 확인만" },
+        { "stage": "bridge", "wallSec": 0.4, "estTokensRead": 0, "mcpCalls": 0, "note": "sourceFingerprint 일치 → 추출·교차검증 스킵, validate-bridge만 (rules §10). 1차 런에서는 이 단계가 실측·보정 포함 수 분" },
+        { "stage": "plan", "wallSec": 82.2, "estTokensRead": 6000, "estTokensWritten": 3300, "note": "bridge compact 6k 토큰 기준(pretty였다면 24k). 검증 1차 통과" },
+        { "stage": "code", "wallSec": 198.0, "estTokensRead": 3300, "estTokensWritten": 6500, "note": "소스 6파일+설정 2+에셋 12+emoji-extract+tsc+validate-code. 게이트 경고 0" },
+        { "stage": "verify", "wallSec": 15.9, "estTokensRead": 200, "note": "1라운드 수렴 98.641% (폰트 미제공 상태). fix 루프 불필요 → visual.json(59k 토큰) 정독 자체가 발생 안 함" }
+      ],
+      "totals": { "wallSec": 312, "estTokens": 19700, "verifyRounds": 1, "confidence": 0.98641 },
+      "acceptedMismatch": ["이모지 래스터(Twemoji↔Figma)", "폰트 미제공 폴백(사용자가 index.html FONTS 슬롯에 추가 시 해소)"],
+      "failures": []
+    },
+    {
+      "runId": "2026-07-09-run1-pchome",
+      "runMode": "auto",
+      "context": "브릿지 개선 전 (참고 기록 — 사후 재구성)",
+      "stages": [
+        { "stage": "bridge", "note": "기존 브릿지 재사용(검증만) — 그러나 데이터 결함 4건 내재" },
+        { "stage": "plan", "note": "validate-plan error 1 + 경고 5 → 3회 수정. bridge pretty 24k 토큰 읽기" },
+        { "stage": "code", "note": "validate-code error 8건 → 에셋/앵커 재작업" },
+        { "stage": "verify", "note": "5라운드 + 사용자 지적 2건(헤더/폰트). 라운드마다 visual.json(59k 토큰) 분석" }
+      ],
+      "totals": { "verifyRounds": 5, "confidence": 0.98310, "note": "벽시계 수십 분 규모(라운드당 분석·수정 포함)" },
+      "failures": [
+        { "stage": "bridge", "cause": "재조합 서브트리 좌표 오염 4건", "detectedBy": "verify/user" },
+        { "stage": "code", "cause": "plan 표 py-[11px] 복사 누락, font-family 미적용", "detectedBy": "user" }
+      ]
+    }
+  ]
+}
