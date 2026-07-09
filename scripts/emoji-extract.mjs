@@ -110,7 +110,8 @@ async function main() {
     console.log(`wrote ${item.fileName} <- ${args.set}`);
   }
 
-  writeFileSync(bridgePath, JSON.stringify(bridge, null, 2) + "\n", "utf-8");
+  // 정본은 compact — pretty 저장은 브릿지를 4배 불려 하류 읽기 토큰(=시간)을 낭비한다 (rules §14)
+  writeFileSync(bridgePath, JSON.stringify(bridge) + "\n", "utf-8");
   console.log(`\n총 ${ok}개 이모지 asset(${args.set}), bridge 갱신: ${relative(process.cwd(), bridgePath)}`);
 }
 

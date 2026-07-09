@@ -9,8 +9,8 @@
 ---
 
 ## 1. 토큰 최적화 (출력 JSON이 제일 큰 비용)
-- [ ] **P1 · 저장은 compact, 사람용은 pretty 분리** — 현재 pretty-print라 pc-home 39KB(compact ~20KB, 약 2배).
-      plan/code가 읽는 정본은 무들여쓰기로 저장, 필요 시 `--pretty`로만 예쁘게. (근거: 실측 39376B)
+- [x] **P1 · 저장은 compact, 사람용은 pretty 분리** — 완료(rules §14, `scripts/bridge-format.mjs`).
+      실측: pc-home pretty 94KB(≈24k 토큰) → compact 23KB(≈6k 토큰), 4배. emoji-extract도 compact 저장으로 수정.
 - [ ] **P1 · 래퍼 프레임 접기** — pc-home 83노드 중 frame 32개. 자식 1개짜리 + layout/style 의미 없는
       순수 래퍼는 부모로 병합해 트리 축소 (무손실 지키려면 접는 프레임에 실제 속성 있으면 보존). 코드 중첩도 얕아짐.
 - [ ] **P2 · bbox 다이어트** — 오토레이아웃 컨테이너 안 자식은 layout이 위치를 결정하므로 bbox 생략 가능
@@ -26,6 +26,31 @@
 - [ ] **P2 · `scripts/bridge-stats.mjs` 추가** — 브릿지 파일 넣으면 노드수/깊이/타입분포/바이트/추정토큰/
       소수점 잔여/semanticRole·suggested 수를 한 번에 출력 (지금 임시로 하던 분석을 도구화).
 - [ ] **P3 · 캡처별 MCP 콜 소모량 기록** — `manifest.json`에 콜 수 집계 → 남은 한도 관리에 활용.
+
+## 2.5. 완료된 정확도·시간 개선 (2026-07-09)
+- [x] **재조합(re-extract) 서브트리 confidence 마킹 의무화** — rules §8-1, figma-extractor 계약. 스키마 무변경(confidence 재사용).
+- [x] **validate-bridge 불변식 3종** — 오토레이아웃 산술 / 부모⊇자식 / row·column 겹침 (rules §9-1).
+- [x] **bbox↔스크린샷 edge 대조** — 전이 검사 + fill 일치 2중 신호. 1차 런의 좌표 결함 4건 전부 + 미발견 2건 검출 실증.
+- [x] **수치 기계 추출 스켈레톤** — `scripts/bridge-skeleton.mjs` (rules §8-2). metadata 좌표계(부모 상대,
+      group 자식은 공유 좌표) 해석을 기계에 고정 — CTA x=102 오추출의 원인이 좌표계 오해석이었음을 실증.
+- [x] **입력 불변 스킵** — `mcp-cache.mjs fingerprint` + `meta.sourceFingerprint` (rules §10). 캐시가 안 변했으면 브릿지 단계 스킵.
+- [x] **bridge-autofix.mjs (차선 보정 도구)** — 오토레이아웃 산술은 포뮬러로 직접 치환(결정론), 스크린샷 색상영역
+      매칭은 배경과 안 구분되는 색·같은 색/크기 형제가 여럿이면 확신 없어 스스로 보류하도록 가드 2개 추가.
+      단 **정본이 아니다** — §2.6 참고, 개별 `get_design_context` 호출이 항상 1순위.
+- 효과 실측: verify 1라운드 95.756% → 98.715%, 수렴 5라운드+사용자 지적 2건 → 2라운드·지적 0건.
+
+## 2.6. 중요 실측 — "메타데이터가 부족해서 픽셀 추측한 게 아니라, 개별 호출을 안 해서였다" (2026-07-09)
+img_01(leaf 인스턴스)을 라이브 `get_design_context(nodeId: 9:571)`로 **개별 호출**해보니, 카드 3장 중
+실제로 틀렸던 값은 `add-card`의 x좌표 **1개**뿐이었다 — 나머지 카드 위치·크기·avatar가 pill이라는 것·
+tag 색까지 전부 정확했고, 심지어 최초 브릿지의 detail 패스가 놓친 카드 내부 구분선(#E1E1E1, 실측으로
+발견)까지 나왔다. 그런데 최초 브릿지는 **전체 섹션 1회 `get_design_context` 호출**(`codeSummary` 자연어
+요약만 반환, 좌표 없음)만으로 이 leaf 서브트리 전체를 재구성했었다 — 그 요약을 보고 LLM이 좌표를
+지어낸 것이 진짜 원인이다. **결론: leaf마다 개별 `get_design_context` 호출이 항상 1순위**(rules §8-1
+갱신 완료, agents/figma-extractor.md `detail` 패스도 갱신). `bridge-autofix.mjs`의 스크린샷 매칭은
+그 개별 호출이 실패/rate-limit일 때만 쓰는 차선책이다.
+- [ ] **P1 · img_02/header 개별 재호출 대기** — 이번 세션에서 Figma MCP(Starter plan) 호출 한도에 걸려
+      `get_design_context(9:579)`(img_02), `get_design_context(9:586)`(header)는 아직 실측하지 못했다.
+      한도가 풀리면 이 두 leaf부터 개별 재호출 → `confidence: 0.7`로 남아있는 좌표를 실측치로 교체.
 
 ## 3. 에러 처리 (실행 중 실패했을 때)
 - [ ] **P1 · MCP 호출 실패 표기 규약** — 패스 하나 실패 시 그냥 죽지 말고, 브릿지 `meta.errors[]`에

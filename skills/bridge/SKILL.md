@@ -38,7 +38,11 @@ Figma 원본을 **무손실로** 정규화해 후속 단계(plan/code)가 쓰기
 
 ## 출력
 - `.ddalkak/bridge/<name>.bridge.json` (스키마 v2.1 준수, `meta.schemaVersion: "2.1"`)
+- **compact 저장**(rules §14 — pretty는 토큰 4배). 사람 검토: `scripts/bridge-format.mjs <file> --pretty`
+- `meta.sourceFingerprint`에 캐시 지문 기록(`scripts/mcp-cache.mjs fingerprint`) — 재실행 시
+  지문이 같으면 **추출 스킵 + 기존 브릿지 재사용** (rules §10, 시간 절약)
 - 저장 전 `scripts/validate-bridge.mjs`로 검증 → 미해결 `@ref`/불일치 있으면 자가 수정 1회 재시도 (rules §9)
+  — 검증기는 불변식·bbox↔스크린샷 edge 대조(rules §9-1)까지 수행한다
 
 ## 절차
 1. URL 파싱 → file key / node id 추출, node-id 유무로 section/page 모드 확정.
@@ -48,8 +52,11 @@ Figma 원본을 **무손실로** 정규화해 후속 단계(plan/code)가 쓰기
 4. **비전 의미 레이어(§11)** — 주요 컨테이너에 `semanticRole` 부여, 반복 패턴 인식. MCP 수치는 절대 덮어쓰지 않음.
 5. **구조 추론(§12)** — Figma에 없어도 코드에 필요한 구조 제안: 반복 서브트리 → `suggestedComponent`(+`suggestedProps`),
    흩어진 절대배치 덩어리 → `source: "inferred"` 합성 그룹 + flex 추론. plan/code가 이걸 근거로 컴포넌트화·중첩을 구현.
-6. **스크린샷 ↔ 구조 교차검증(§8)** — 누락·불일치를 `reconciliation`에 기록. 재추출로 보정하고,
-   불가능한 것만 비전 backfill(`source: "vision"` + `confidence` 태깅, §11-2).
+6. **스크린샷 ↔ 구조 교차검증(§8)** — 누락·불일치를 `reconciliation`에 기록. **재추출(leaf 노드 ID로
+   개별 `get_design_context` 재호출)이 항상 1순위**이고(rules §8-1), 호출이 실패/한도초과일 때만
+   `scripts/bridge-autofix.mjs`(스크린샷 색상영역 매칭, §9-1)로 차선 보정 — 이때 보정한 노드는
+   `confidence: 0.7`로 남겨 한도가 풀리면 재확인 대상임을 표시한다. 그래도 안 되는 것만 비전
+   backfill(`source: "vision"` + `confidence` 태깅, §11-2).
 7. 토큰 매핑: 값이 변수에 대응하면 `@color.primary`처럼 참조, 아니면 raw 리터럴 (§4 무손실 규약).
 8. 검증(§9) → 저장 → 요약 보고 (screens 수, 반응형 그룹, 컴포넌트 판별, 교차검증 결과,
    semanticRole/vision 노드 수, suggestedComponent 제안 목록).

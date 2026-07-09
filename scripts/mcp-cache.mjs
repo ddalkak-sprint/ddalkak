@@ -4,9 +4,11 @@
 // 사용법:
 //   node scripts/mcp-cache.mjs list                    # fixtures/figma/ 아래 캡처 목록
 //   node scripts/mcp-cache.mjs check <capture-dir>     # 매니페스트 vs 실제 파일 완결성 검사
+//   node scripts/mcp-cache.mjs fingerprint <capture-dir>  # 캐시 지문(sha1) — 브릿지 스킵 판정용 (rules §10)
 
 import { readFileSync, existsSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
+import { createHash } from "node:crypto";
 
 const [cmd, arg] = process.argv.slice(2);
 
@@ -70,9 +72,27 @@ function checkCapture(dir) {
   console.log(`✅ 캡처 완결 (${dir}): 콜 ${calls.length}, 도구 [${[...tools].join(", ")}]`);
 }
 
+// 캐시 지문: manifest의 콜 로그가 가리키는 모든 파일 내용의 sha1.
+// 브릿지 meta.sourceFingerprint와 같으면 원시 입력이 동일 → 브릿지 재추출을 스킵할 수 있다 (rules §10).
+function fingerprintCapture(dir) {
+  if (!dir) {
+    console.error("사용법: node scripts/mcp-cache.mjs fingerprint <capture-dir>");
+    process.exit(1);
+  }
+  const m = JSON.parse(readFileSync(join(dir, "manifest.json"), "utf8"));
+  const h = createHash("sha1");
+  for (const c of (m.calls ?? []).slice().sort((a, b) => (a.file ?? "").localeCompare(b.file ?? ""))) {
+    if (!c.file || !existsSync(join(dir, c.file))) continue;
+    h.update(c.file);
+    h.update(readFileSync(join(dir, c.file)));
+  }
+  console.log(h.digest("hex").slice(0, 16));
+}
+
 if (cmd === "list") listCaptures(arg);
 else if (cmd === "check") checkCapture(arg);
+else if (cmd === "fingerprint") fingerprintCapture(arg);
 else {
-  console.error("사용법:\n  node scripts/mcp-cache.mjs list\n  node scripts/mcp-cache.mjs check <capture-dir>");
+  console.error("사용법:\n  node scripts/mcp-cache.mjs list\n  node scripts/mcp-cache.mjs check <capture-dir>\n  node scripts/mcp-cache.mjs fingerprint <capture-dir>");
   process.exit(1);
 }
