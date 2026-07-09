@@ -70,6 +70,10 @@ verify 불일치의 또 다른 축은 근사(§4)가 아니라 **관습 강요**
   - `layout.gap: 8`을 "여백이 좁아 보임" 등으로 16/4로 조정하지 않는다 — gap은 브릿지 값 그대로.
 - `semanticRole`·`name`은 **시맨틱 태그·alt·컴포넌트 이름** 선택에만 쓴다(§7). 모양·방향·간격·크기 같은
   **시각 수치에는 관여하지 않는다.** 명시값이 없을 때만(§2-1 layout 누락 등) 추론이 개입한다.
+- **상호작용·표 역할은 네이티브 요소로 구현한다(plan-rules §2-4).** plan이 `<button>`/`<a>`/`<input>`/`<select>`
+  또는 `<table>`류로 계획한 노드를 `div`/`span`으로 떨구지 않는다. 접근성 최소치를 함께 구현한다 —
+  `<button>` 기본 `type="button"`, 아이콘 전용 버튼은 `aria-label`, 드롭다운 트리거는 `aria-haspopup`,
+  breadcrumb 현재 위치는 `aria-current="page"`. plan에 계획이 있으면 그대로, 없으면 §2-4 표 기본값을 따른다.
 
 ### 4-3. data-dk — 검증 앵커(요소 이름표) 부착
 verify(4단계)는 코드 요소를 브릿지 노드와 매칭해 채점한다. 매칭 근거가 없으면 폴백(눈치껏)으로 떨어지거나
@@ -162,6 +166,10 @@ plan-rules §2 매핑을 코드로 구현한다.
   래퍼 `div`로 감싸지 않는다. 명명 prop은 브릿지 props에서 온 **의미 값**에만 쓴다.
   **래퍼 허용 예외 2가지**: ① 반응형 표시 분기(`hidden lg:block`)처럼 display 유틸이 컴포넌트 루트 클래스와
   충돌하는 경우, ② passthrough를 지원하지 않는 기존(수정 범위 밖) 컴포넌트를 배치하는 경우.
+- **상호작용 컴포넌트는 네이티브 요소 속성을 passthrough 한다(§2-4).** 루트가 `<button>`/`<a>`/`<input>`이면
+  props를 그 요소의 HTML 속성 타입에서 확장하고(`ButtonHTMLAttributes`/`AnchorHTMLAttributes`/`InputHTMLAttributes`)
+  `...rest`로 흘린다 — `onClick`/`href`/`type`/`value`/`disabled` 등을 개별 명명 prop으로 발명하지 않는다.
+  명명 prop은 브릿지 props에서 온 의미 값(`variant`, `label` 등)에만 쓴다.
 - 주석은 plan의 ⚠ 항목·절대배치 근거를 인용할 때만 남긴다(그 외 서술 주석 금지).
 
 ## 8. 프레임워크 분기
