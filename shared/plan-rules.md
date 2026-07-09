@@ -79,6 +79,30 @@
   남는다. 이는 Figma↔브라우저 이모지 래스터의 본질적 차이라 코드로 못 없애며, 게이트를 콘텐츠 인지형으로 다루는
   검증쪽 몫이다. plan은 이 점을 ⚠에 적어 "이모지 영역 불일치는 정상"임을 전달한다.
 
+### 2-4. 상호작용·표 시맨틱 역할 → 네이티브 요소
+`semanticRole`이 상호작용이나 표 구조를 가리키면 §2 기본 매핑(`frame→div`, `text→span`)을 덮고
+네이티브 요소로 계획한다. **div/span으로 떨구지 않는다** — 키보드 포커스·기본 동작·접근성이 사라진다.
+(브릿지가 이 역할을 이미 태깅해 두므로 발명이 아니라 소비다. §2-2 여섯 역할의 확장.)
+
+| semanticRole | 코드 요소 | 비고 |
+|---|---|---|
+| `button` / `cta-button` / `icon-button` | `<button type="button">` | 아이콘만 있어 라벨 텍스트가 없으면 `aria-label` 계획 |
+| `nav-menu` / `menu-item` (드롭다운 트리거) | `<button>` + `aria-haspopup` | 펼침 상태가 있으면 `aria-expanded` |
+| `search-field` (값 직접 입력) | `<input>` + `<label>` 연결 | 옵션에서 고르는 형태(값+화살표)면 `<select>`. 어느 쪽인지 브릿지로 불분명하면 ⚠에 기록 |
+| `tab` | `<button role="tab">` (목록 컨테이너는 `role="tablist"`) | 현재 탭은 `aria-selected` |
+| `nav-item` | 라우팅(다른 페이지·URL로 이동)이면 `<a href>`, 앱 내 화면 전환·토글이면 `<button>` | 판별 불가면 `<button type="button">`을 기본으로 하고 ⚠에 기록(죽은 href 방지) |
+| `breadcrumb-item` | `<a href>`, **마지막(현재 위치)** 항목만 `<span aria-current="page">` | 링크 대상은 design.md 라우팅 규칙, 없으면 ⚠ |
+
+- 표 구조(`table` / `table-header` / `table-row`)는 격자 시맨틱으로 계획한다:
+  목록 컨테이너 `<table>`, 헤더행 `<thead>`+셀 `<th scope="col">`, 데이터행 `<tbody>`+`<tr>`+셀 `<td>`.
+  Figma가 오토레이아웃 프레임으로 준 표라도 flex/grid `div`로 두지 말고 표 요소로 재구성한다.
+  셀의 정렬·간격·폭 등 **시각 수치는 §2·§4 그대로** 스타일 클래스로 유지한다(시맨틱만 표 요소로 바꾼다).
+- 상호작용 요소의 컴포넌트 API는 네이티브 요소 속성을 passthrough 하도록 계획한다
+  (`<button>`→`ButtonHTMLAttributes`, `<a>`→`AnchorHTMLAttributes`, `<input>`→`InputHTMLAttributes`).
+  `onClick`/`href`/`value` 같은 동작 값을 새 명명 prop으로 발명하지 말고 요소 속성으로 흘린다(§3 props 표에 명시, code-rules §7-1).
+- 이 판정은 §2-2 마지막 문단과 동일하게 **태그·요소 선택에만** 쓴다 — 역할을 근거로 radius/gap/방향 같은
+  시각 수치를 바꾸지 않는다.
+
 ## 3. 컴포넌트 재사용 vs 수정 vs 신규 판별
 `type: component`/`instance` 노드는 브릿지가 이미 판별해 둔 필드로 결정한다(figma-extraction-rules §3).
 핵심: `mappedCodeComponent`는 **대상 코드 경로**일 뿐, 그 파일이 실제로 존재하는지로 재사용/신규를 가른다.
