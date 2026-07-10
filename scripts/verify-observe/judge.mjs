@@ -3,6 +3,7 @@
 // 관계(형제 간 간격, 부모 내 오프셋)만 본다.
 // 기하 위반은 tolMinor 이하이면 minor로 강등 — 이모지 글리프 폭 등 렌더링 노이즈 가능성 표시.
 import { normalizeHex } from "./bridge.mjs";
+import { contains } from "./match.mjs";
 
 const fw = (w) => ({ normal: "400", bold: "700" })[w] ?? String(w);
 
@@ -64,6 +65,8 @@ export function judge({ leaves, containers, matched, missing, derived, units, to
       const A = us[i];
       const B = us[i + 1];
       if (A.el === B.el) continue; // 두 노드가 같은 요소로 병합 — 정상 재량, 간격 없음
+      // 한쪽이 다른 쪽을 포함하면(코드가 형제 노드를 부모-자식으로 재구성) 간격이라는 개념이 성립하지 않는다
+      if (contains(A.el, B.el) || contains(B.el, A.el)) continue;
       const horizontal = Math.abs(cx(B.abs) - cx(A.abs)) > Math.abs(cy(B.abs) - cy(A.abs));
       const expGap = horizontal ? B.abs[0] - (A.abs[0] + A.abs[2]) : B.abs[1] - (A.abs[1] + A.abs[3]);
       const actGap = horizontal ? B.rect[0] - (A.rect[0] + A.rect[2]) : B.rect[1] - (A.rect[1] + A.rect[3]);

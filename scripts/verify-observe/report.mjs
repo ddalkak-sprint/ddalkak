@@ -23,6 +23,10 @@ export function buildReport({ name, screen, url, viewport, leaves, matched, miss
       major: majors.length,
       minor: minors.length,
       matching: matchStats,
+      derivation: [...derived.values()].reduce((acc, d) => {
+        acc[d.via] = (acc[d.via] ?? 0) + 1;
+        return acc;
+      }, {}),
     },
     coverage: {
       // 조용한 누락 금지 — 채점하지 못한 범위를 명시한다
@@ -47,6 +51,7 @@ export function renderMarkdown(report) {
     `| --- | --- |`,
     `| 리프 매칭 | ${s.matched} / ${s.leaves} (누락 ${s.missing}) |`,
     `| 매칭 방법 | ${Object.entries(s.matching).map(([k, v]) => `${k} ${v}`).join(" · ") || "—"} |`,
+    `| 컨테이너 유도 | ${Object.entries(s.derivation).map(([k, v]) => `${k} ${v}`).join(" · ") || "—"} |`,
     `| 위반 | major ${s.major} · minor ${s.minor} (tol ${report.thresholds.tol}px, minor 경계 ${report.thresholds.tolMinor}px) |`,
     `| 미채점 | 단서 없는 리프 ${report.coverage.unmatchableLeaves.length} · 미유도 컨테이너 ${report.coverage.underivedContainers.length} |`,
     "",

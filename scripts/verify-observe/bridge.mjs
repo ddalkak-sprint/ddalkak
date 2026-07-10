@@ -68,6 +68,8 @@ export function flattenBridge(bridge, screen) {
         abs,
         bg: solidFill(st),
         radius: typeof st.cornerRadius === "number" ? st.cornerRadius : null,
+        // 인스턴스의 코드 컴포넌트 단서 — data-src 기반 유도(match.mjs)에 쓴다
+        comp: n.mappedCodeComponent ?? n.suggestedComponent ?? null,
         childPaths: (n.children ?? []).map((_, i) => `${path}.${i}`),
       });
     }

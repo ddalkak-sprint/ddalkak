@@ -9,7 +9,7 @@ async function main() {
   const icon = { pass: "✅", conditional: "⚠️", fail: "❌" }[s.verdict];
 
   console.log(`${icon} verify-observe ${s.verdict}: ${report.name}/${report.screen} — 매칭 ${s.matched}/${s.leaves} (누락 ${s.missing}) · major ${s.major} · minor ${s.minor}`);
-  console.log(`매칭 방법: ${Object.entries(s.matching).map(([k, v]) => `${k} ${v}`).join(" · ") || "—"} · 미유도 컨테이너 ${report.coverage.underivedContainers.length}`);
+  console.log(`매칭 방법: ${Object.entries(s.matching).map(([k, v]) => `${k} ${v}`).join(" · ") || "—"} · 유도 ${Object.entries(s.derivation).map(([k, v]) => `${k} ${v}`).join(" · ") || "—"} · 미유도 ${report.coverage.underivedContainers.length}`);
   for (const f of report.findings.filter((x) => x.severity === "major")) {
     console.log(` - [${f.kind}] ${f.path} ${f.where} — 기대 ${f.expected} / 실측 ${f.actual}${f.src ? ` @ ${f.src}` : ""}`);
   }

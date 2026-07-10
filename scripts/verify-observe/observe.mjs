@@ -58,6 +58,9 @@ export async function observePage({ url, viewport, timeoutMs }) {
           lineHeight: cs.lineHeight,
           borderRadius: cs.borderTopLeftRadius,
           src: el.tagName === "IMG" ? (el.currentSrc || el.src || "").split("/").pop().split("?")[0] : null,
+          // input/textarea의 placeholder — Figma 텍스트가 DOM 텍스트 노드가 아니라 속성으로 렌더되는 경우의 매칭 키
+          placeholder:
+            el.tagName === "INPUT" || el.tagName === "TEXTAREA" ? norm(el.getAttribute("placeholder")) || null : null,
           srcLoc: srcLoc ?? null,
           exit: 0,
         };
