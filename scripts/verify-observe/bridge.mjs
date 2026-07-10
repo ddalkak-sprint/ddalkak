@@ -1,4 +1,4 @@
-// bridge.json → 채점 기준 평탄화. 채점 기준은 끝까지 bridge 단독 (verify-static과 동일 원칙).
+// bridge.json → 채점 기준 평탄화. 채점 기준은 끝까지 bridge 단독.
 // bbox는 부모 상대 좌표이므로 절대좌표로 누적하고, @color/@type 토큰 참조를 해석한다.
 import { basename } from "node:path";
 

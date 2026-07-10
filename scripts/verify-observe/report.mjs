@@ -1,4 +1,4 @@
-// 리포트 — observe.json이 단일 정본, observe.md는 그것의 렌더링 (verify-static과 동일 원칙).
+// 리포트 — observe.json이 단일 정본, observe.md는 그것의 렌더링.
 // 같은 입력 → 동일 출력 유지를 위해 타임스탬프를 넣지 않는다.
 // 주장 범위는 "스펙(bridge.json) 일치"까지 — bbox가 스크린샷과 모순인 사례가 실측됐으므로
 // "Figma 일치"는 스크린샷 층(visual-verify)의 몫이다.
