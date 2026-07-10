@@ -9,6 +9,7 @@
   "scripts": {
     "validate:bridge": "node scripts/validate-bridge.mjs",
     "validate:plan": "node scripts/validate-plan.mjs",
+    "verify:static": "node scripts/verify-static.mjs",
     "visual:verify": "node scripts/visual-verify/cli.mjs",
     "test:visual": "node scripts/visual-verify/cli.mjs",
     "test:visual:engine": "node scripts/visual-verify/test-engine.mjs"
