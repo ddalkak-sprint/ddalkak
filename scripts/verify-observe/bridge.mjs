@@ -76,12 +76,21 @@ export function flattenBridge(bridge, screen) {
     // 자식 좌표는 content-box 기준 — layout.padding[t,r,b,l]이 선언된 컨테이너는
     // 자식 원점을 (left, top)만큼 안쪽으로 옮긴다. (login·pc-home 브릿지 실측으로 확인:
     // emoji-picker-panel padding 30 + 자식 rel (0,0) = 렌더 +31(테두리 1 포함) 등)
+    // 자식 좌표 기준(content-box/border-box)이 브릿지 파일·노드마다 혼재한다(추출기 이슈로 등록).
+    // 스키마 버전으로 판별이 불가능하므로 컨테이너 단위로 자동 감지한다:
+    // 오토레이아웃에서 자식은 패딩 안쪽에 놓일 수 없으므로, 자식 좌표가 패딩보다
+    // 안쪽(작음)이면 content-box 기준 — 그때만 자식 원점을 패딩만큼 옮긴다.
     const pad = n.layout?.padding;
     let cox = abs[0];
     let coy = abs[1];
-    if (Array.isArray(pad) && pad.length === 4) {
-      cox += resolveNum(pad[3]);
-      coy += resolveNum(pad[0]);
+    if (Array.isArray(pad) && pad.length === 4 && (n.children ?? []).length) {
+      const padT = resolveNum(pad[0]);
+      const padL = resolveNum(pad[3]);
+      const contentBox = n.children.some((c) => (c.bbox?.[0] ?? 0) < padL || (c.bbox?.[1] ?? 0) < padT);
+      if (contentBox) {
+        cox += padL;
+        coy += padT;
+      }
     }
     (n.children ?? []).forEach((c, i) => walk(c, cox, coy, `${path}.${i}`));
   }
