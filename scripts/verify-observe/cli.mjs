@@ -11,7 +11,7 @@ async function main() {
   console.log(`${icon} verify-observe ${s.verdict}: ${report.name}/${report.screen} — 매칭 ${s.matched}/${s.leaves} (누락 ${s.missing}) · major ${s.major} · minor ${s.minor}`);
   console.log(`매칭 방법: ${Object.entries(s.matching).map(([k, v]) => `${k} ${v}`).join(" · ") || "—"} · 미유도 컨테이너 ${report.coverage.underivedContainers.length}`);
   for (const f of report.findings.filter((x) => x.severity === "major")) {
-    console.log(` - [${f.kind}] ${f.path} ${f.where} — 기대 ${f.expected} / 실측 ${f.actual}`);
+    console.log(` - [${f.kind}] ${f.path} ${f.where} — 기대 ${f.expected} / 실측 ${f.actual}${f.src ? ` @ ${f.src}` : ""}`);
   }
   const minors = report.findings.filter((x) => x.severity === "minor");
   if (minors.length) console.log(` - minor ${minors.length}건 (렌더링 노이즈 가능성) — 상세는 리포트 참조`);

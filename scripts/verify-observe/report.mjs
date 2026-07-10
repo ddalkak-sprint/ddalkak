@@ -52,9 +52,9 @@ export function renderMarkdown(report) {
     "",
   ];
   if (report.findings.length) {
-    lines.push(`## 위반 (${report.findings.length})`, "", `| 심각도 | 종류 | 위치 | 기대 | 실측 |`, `| --- | --- | --- | --- | --- |`);
+    lines.push(`## 위반 (${report.findings.length})`, "", `| 심각도 | 종류 | 위치 | 기대 | 실측 | 소스 |`, `| --- | --- | --- | --- | --- | --- |`);
     for (const f of report.findings) {
-      lines.push(`| ${f.severity} | ${f.kind} | \`${f.path}\` ${escapeCell(f.where)} | ${escapeCell(f.expected)} | ${escapeCell(f.actual)} |`);
+      lines.push(`| ${f.severity} | ${f.kind} | \`${f.path}\` ${escapeCell(f.where)} | ${escapeCell(f.expected)} | ${escapeCell(f.actual)} | ${f.src ? `\`${escapeCell(f.src)}\`` : "—"} |`);
     }
     lines.push("");
   }

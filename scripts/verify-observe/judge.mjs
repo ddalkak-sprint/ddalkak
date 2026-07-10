@@ -8,16 +8,23 @@ const fw = (w) => ({ normal: "400", bold: "700" })[w] ?? String(w);
 
 export function judge({ leaves, containers, matched, missing, derived, units, tol, tolMinor }) {
   const findings = [];
-  const push = (kind, severity, path, where, expected, actual, rect, rects) =>
-    findings.push({ kind, severity, path, where, expected, actual, rect: rect ?? null, rects: rects ?? null });
+  const push = (kind, severity, path, where, expected, actual, rect, rects, src) =>
+    findings.push({ kind, severity, path, where, expected, actual, rect: rect ?? null, rects: rects ?? null, src: src ?? null });
   const geoSeverity = (delta) => (Math.abs(delta) <= tolMinor ? "minor" : "major");
 
-  // 0. 누락 — 매칭되지 않은 리프. rect는 기대 위치(브릿지 절대좌표)를 담는다.
+  // 0. 누락 — 매칭되지 않은 리프. rect는 기대 위치(브릿지 절대좌표)를 담고,
+  //    소스 위치는 존재하지 않으므로 가장 가까운 유도된 부모 컨테이너를 "삽입할 자리"로 가리킨다.
   for (const lf of missing) {
+    let insertAt = null;
+    const segs = lf.path.split(".");
+    for (let n = segs.length - 1; n >= 1 && !insertAt; n--) {
+      const d = derived.get(segs.slice(0, n).join("."));
+      if (d?.el.srcLoc) insertAt = `${d.el.srcLoc} (삽입 위치: 부모)`;
+    }
     push(
       "missing", "major", lf.path,
       lf.kind === "text" ? `텍스트 ${JSON.stringify(lf.content.slice(0, 20))}` : `자산 ${lf.assetBase}`,
-      "존재", "미발견", lf.abs,
+      "존재", "미발견", lf.abs, null, insertAt,
     );
   }
 
@@ -28,23 +35,23 @@ export function judge({ leaves, containers, matched, missing, derived, units, to
     if (lf.kind === "text") {
       const f = lf.font;
       if (f?.size && Math.abs(el.fontSize - f.size) > 0.5)
-        push("font-size", "major", lf.path, where, `${f.size}px`, `${el.fontSize}px`, el.rect);
+        push("font-size", "major", lf.path, where, `${f.size}px`, `${el.fontSize}px`, el.rect, null, el.srcLoc);
       if (f?.weight && String(f.weight) !== fw(el.fontWeight))
-        push("font-weight", "major", lf.path, where, String(f.weight), fw(el.fontWeight), el.rect);
+        push("font-weight", "major", lf.path, where, String(f.weight), fw(el.fontWeight), el.rect, null, el.srcLoc);
       if (typeof f?.lineHeight === "number") {
         // 규칙표 §1: 값이 4 이하면 unitless 배수 → fontSize를 곱해 px로 통일
         const expLh = f.lineHeight <= 4 ? f.lineHeight * (f.size ?? 0) : f.lineHeight;
         const lh = parseFloat(el.lineHeight);
         if (expLh > 0 && !Number.isNaN(lh) && Math.abs(lh - expLh) > 0.6)
-          push("line-height", "major", lf.path, where, `${Math.round(expLh * 10) / 10}px`, el.lineHeight, el.rect);
+          push("line-height", "major", lf.path, where, `${Math.round(expLh * 10) / 10}px`, el.lineHeight, el.rect, null, el.srcLoc);
       }
       if (lf.color && lf.color !== normalizeHex(el.color))
-        push("color", "major", lf.path, where, lf.color, String(normalizeHex(el.color)), el.rect);
+        push("color", "major", lf.path, where, lf.color, String(normalizeHex(el.color)), el.rect, null, el.srcLoc);
     } else {
       const dw = el.rect[2] - lf.abs[2];
       const dh = el.rect[3] - lf.abs[3];
       if (Math.abs(dw) > 1.5 || Math.abs(dh) > 1.5)
-        push("img-size", "major", lf.path, where, `${lf.abs[2]}×${lf.abs[3]}`, `${el.rect[2]}×${el.rect[3]}`, el.rect);
+        push("img-size", "major", lf.path, where, `${lf.abs[2]}×${lf.abs[3]}`, `${el.rect[2]}×${el.rect[3]}`, el.rect, null, el.srcLoc);
     }
   }
 
@@ -66,7 +73,7 @@ export function judge({ leaves, containers, matched, missing, derived, units, to
           "unit-gap", geoSeverity(delta), c.path,
           `${c.name} [${A.label} ↔ ${B.label}]`,
           `${Math.round(expGap)}px(${horizontal ? "x" : "y"})`, `${Math.round(actGap)}px`,
-          null, [A.rect, B.rect],
+          null, [A.rect, B.rect], B.el.srcLoc ?? A.el.srcLoc,
         );
     }
   }
@@ -88,7 +95,7 @@ export function judge({ leaves, containers, matched, missing, derived, units, to
           `${c.name} → ${u.label}`,
           `(${Math.round(u.abs[0] - c.abs[0])}, ${Math.round(u.abs[1] - c.abs[1])})`,
           `Δ(${Math.round(dx)}, ${Math.round(dy)})`,
-          u.rect,
+          u.rect, null, u.el.srcLoc,
         );
     }
   }
@@ -98,12 +105,12 @@ export function judge({ leaves, containers, matched, missing, derived, units, to
     if (d.c.bg) {
       const actual = normalizeHex(d.el.effBg);
       if (actual !== d.c.bg)
-        push("container-bg", "major", path, String(d.c.name), d.c.bg, String(actual), d.el.rect);
+        push("container-bg", "major", path, String(d.c.name), d.c.bg, String(actual), d.el.rect, null, d.el.srcLoc);
     }
     if (d.c.radius != null) {
       const r = parseFloat(d.el.borderRadius);
       if (Math.abs(r - d.c.radius) > 0.6)
-        push("container-radius", "major", path, String(d.c.name), `${d.c.radius}px`, d.el.borderRadius, d.el.rect);
+        push("container-radius", "major", path, String(d.c.name), `${d.c.radius}px`, d.el.borderRadius, d.el.rect, null, d.el.srcLoc);
     }
   }
 

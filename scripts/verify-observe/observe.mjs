@@ -32,7 +32,7 @@ export async function observePage({ url, viewport, timeoutMs }) {
       const out = [];
       let clock = 0; // DFS enter/exit 번호 — 포함 관계 판정용
       const norm = (s) => (s ?? "").replace(/\s+/g, " ").trim();
-      function visit(el, inheritedBg) {
+      function visit(el, inheritedBg, inheritedSrc) {
         const cs = getComputedStyle(el);
         if (cs.display === "none" || cs.visibility === "hidden") return;
         const r = el.getBoundingClientRect();
@@ -41,6 +41,9 @@ export async function observePage({ url, viewport, timeoutMs }) {
         const bgOwn = cs.backgroundColor;
         const opaque = !/rgba\(.*,\s*0\)$/.test(bgOwn) && bgOwn !== "transparent";
         const effBg = opaque ? bgOwn : inheritedBg;
+        // 다리 B: 검증 빌드가 주입한 소스 위치. 없는 요소(래퍼 등)는 조상 것을 상속한다.
+        const srcOwn = el.getAttribute("data-src");
+        const srcLoc = srcOwn ?? inheritedSrc;
         const rec = {
           i: out.length,
           tag: el.tagName.toLowerCase(),
@@ -55,13 +58,14 @@ export async function observePage({ url, viewport, timeoutMs }) {
           lineHeight: cs.lineHeight,
           borderRadius: cs.borderTopLeftRadius,
           src: el.tagName === "IMG" ? (el.currentSrc || el.src || "").split("/").pop().split("?")[0] : null,
+          srcLoc: srcLoc ?? null,
           exit: 0,
         };
         out.push(rec);
-        for (const c of el.children) visit(c, effBg);
+        for (const c of el.children) visit(c, effBg, srcLoc);
         rec.exit = clock++;
       }
-      visit(document.body, "rgb(255, 255, 255)");
+      visit(document.body, "rgb(255, 255, 255)", null);
       return out;
     });
 
