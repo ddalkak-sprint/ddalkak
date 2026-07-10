@@ -1,0 +1,1072 @@
+[
+  {
+    "nodeId": "1:51",
+    "name": "ic / add-24",
+    "bbox": null,
+    "resolved": false,
+    "className": "relative size-[24px]"
+  },
+  {
+    "nodeId": "1:174",
+    "name": "ic / arrow_down",
+    "bbox": null,
+    "resolved": false,
+    "className": "relative size-[24px]"
+  },
+  {
+    "nodeId": "1:9",
+    "bbox": null,
+    "resolved": false,
+    "className": "bg-white border border-[#eee] border-solid overflow-clip relative rounded-[100px] size-[56px]"
+  },
+  {
+    "nodeId": "1:10",
+    "name": "img",
+    "bbox": null,
+    "resolved": false,
+    "className": "absolute left-[-32px] size-[108px] top-[-30px]"
+  },
+  {
+    "nodeId": "1:108",
+    "bbox": null,
+    "resolved": false,
+    "className": "bg-white drop-shadow-[0px_2px_6px_rgba(0,0,0,0.08)] h-[280px] relative rounded-[16px] w-[384px]"
+  },
+  {
+    "nodeId": "1:109",
+    "bbox": null,
+    "resolved": false,
+    "className": "[word-break:break-word] absolute bottom-[42px] font-['Pretendard:Regular'] leading-[18px] left-[24px] not-italic text-[#999] text-[12px] tracking-[-0.06px] translate-y-full whitespace-nowrap"
+  },
+  {
+    "nodeId": "1:110",
+    "bbox": null,
+    "resolved": false,
+    "className": "[word-break:break-word] absolute font-['Pretendard:Regular'] inset-[116px_24px_58px_24px] leading-[0] not-italic overflow-hidden text-[#4a4a4a] text-[18px] text-ellipsis tracking-[-0.18px]"
+  },
+  {
+    "nodeId": "1:111",
+    "name": "top",
+    "bbox": null,
+    "resolved": false,
+    "className": "absolute h-[100px] left-0 right-0 top-0"
+  },
+  {
+    "nodeId": "1:112",
+    "bbox": null,
+    "resolved": false,
+    "className": "absolute content-stretch flex gap-[14px] items-start left-[24px] top-[28px]"
+  },
+  {
+    "nodeId": "1:114",
+    "bbox": null,
+    "resolved": false,
+    "className": "content-stretch flex flex-col gap-[6px] items-start relative shrink-0"
+  },
+  {
+    "nodeId": "1:115",
+    "name": "title",
+    "bbox": null,
+    "resolved": false,
+    "className": "[word-break:break-word] content-stretch flex gap-[6px] items-start leading-[24px] not-italic relative shrink-0 text-[20px] text-black whitespace-nowrap"
+  },
+  {
+    "nodeId": "1:116",
+    "bbox": null,
+    "resolved": false,
+    "className": "font-['Pretendard:Regular'] relative shrink-0"
+  },
+  {
+    "nodeId": "1:117",
+    "bbox": null,
+    "resolved": false,
+    "className": "font-['Pretendard:Bold'] relative shrink-0"
+  },
+  {
+    "nodeId": "1:119",
+    "name": "Button / Outlined-40-icon",
+    "bbox": null,
+    "resolved": false,
+    "className": "absolute bg-white border border-[#ccc] border-solid content-stretch flex items-center justify-center p-[8px] right-[24px] rounded-[6px] top-[28px]"
+  },
+  {
+    "nodeId": "I1:119;1:1521",
+    "bbox": null,
+    "resolved": false,
+    "className": "content-stretch flex gap-[10px] items-center justify-center relative shrink-0"
+  },
+  {
+    "nodeId": "I1:119;1:1522",
+    "name": "ic / add-24",
+    "bbox": null,
+    "resolved": false,
+    "className": "relative shrink-0 size-[24px]"
+  },
+  {
+    "nodeId": "1:120",
+    "name": "div",
+    "bbox": null,
+    "resolved": false,
+    "className": "absolute bg-[#eee] bottom-0 h-px left-[24px] right-[24px]"
+  },
+  {
+    "nodeId": "1:858",
+    "name": "[PC] /post/{id}/edit  (image case)",
+    "bbox": null,
+    "resolved": false,
+    "className": "relative size-full"
+  },
+  {
+    "nodeId": "1:859",
+    "bbox": null,
+    "resolved": false,
+    "className": "absolute h-[928px] left-0 overflow-clip top-[132px] w-[1920px]"
+  },
+  {
+    "nodeId": "1:860",
+    "name": "arches-national-park-gabc4bf2ae_1920 1",
+    "bbox": [
+      0,
+      -216,
+      1920,
+      1359.92
+    ],
+    "resolved": true,
+    "className": "-translate-x-1/2 -translate-y-1/2 absolute h-[1359.917px] left-1/2 top-[calc(50%-0.04px)] w-[1920px]"
+  },
+  {
+    "nodeId": "1:861",
+    "name": "overlay",
+    "bbox": null,
+    "resolved": false,
+    "className": "absolute bg-[rgba(0,0,0,0.5)] h-[926px] left-0 top-[2px] w-[1920px]"
+  },
+  {
+    "nodeId": "1:862",
+    "bbox": [
+      1176.06,
+      554,
+      384,
+      280
+    ],
+    "resolved": true,
+    "className": "absolute bg-white drop-shadow-[0px_2px_6px_rgba(0,0,0,0.08)] h-[280px] left-[calc(66.67%-104px)] rounded-[16px] top-[554px] w-[384px]"
+  },
+  {
+    "nodeId": "1:863",
+    "name": "card",
+    "bbox": [
+      767.94,
+      246,
+      384,
+      280
+    ],
+    "resolved": true,
+    "className": "absolute bg-white drop-shadow-[0px_2px_6px_rgba(0,0,0,0.08)] h-[280px] left-[calc(33.33%+128px)] rounded-[16px] top-[246px] w-[384px]"
+  },
+  {
+    "nodeId": "I1:863;1:849",
+    "bbox": null,
+    "resolved": false,
+    "className": "[word-break:break-word] absolute bottom-[42px] font-['Pretendard:Regular'] leading-[18px] left-[24px] not-italic text-[#999] text-[12px] tracking-[-0.06px] translate-y-full whitespace-nowrap"
+  },
+  {
+    "nodeId": "I1:863;1:850",
+    "bbox": null,
+    "resolved": false,
+    "className": "[word-break:break-word] absolute font-['Pretendard:Regular'] inset-[116px_24px_58px_24px] leading-[0] not-italic overflow-hidden text-[#4a4a4a] text-[18px] text-ellipsis tracking-[-0.18px]"
+  },
+  {
+    "nodeId": "I1:863;1:851",
+    "name": "top",
+    "bbox": null,
+    "resolved": false,
+    "className": "absolute h-[100px] left-0 right-0 top-0"
+  },
+  {
+    "nodeId": "I1:863;1:853",
+    "bbox": null,
+    "resolved": false,
+    "className": "absolute content-stretch flex gap-[14px] items-start left-[24px] top-[28px]"
+  },
+  {
+    "nodeId": "I1:863;1:855",
+    "bbox": null,
+    "resolved": false,
+    "className": "content-stretch flex flex-col gap-[6px] items-start relative shrink-0"
+  },
+  {
+    "nodeId": "I1:863;1:856",
+    "name": "title",
+    "bbox": null,
+    "resolved": false,
+    "className": "[word-break:break-word] content-stretch flex gap-[6px] items-start leading-[24px] not-italic relative shrink-0 text-[20px] text-black whitespace-nowrap"
+  },
+  {
+    "nodeId": "I1:863;1:857",
+    "bbox": null,
+    "resolved": false,
+    "className": "font-['Pretendard:Regular'] relative shrink-0"
+  },
+  {
+    "nodeId": "I1:863;1:858",
+    "bbox": null,
+    "resolved": false,
+    "className": "font-['Pretendard:Bold'] relative shrink-0"
+  },
+  {
+    "nodeId": "I1:863;1:859",
+    "name": "badge",
+    "bbox": null,
+    "resolved": false,
+    "className": "bg-[#e4fbdc] content-stretch flex items-center justify-center px-[8px] relative rounded-[4px] shrink-0"
+  },
+  {
+    "nodeId": "I1:863;1:859;1:1645",
+    "bbox": null,
+    "resolved": false,
+    "className": "[word-break:break-word] font-['Pretendard:Regular'] leading-[20px] not-italic relative shrink-0 text-[#2ba600] text-[14px] tracking-[-0.07px] whitespace-nowrap"
+  },
+  {
+    "nodeId": "I1:863;1:860",
+    "name": "Button / Outlined-40-icon",
+    "bbox": null,
+    "resolved": false,
+    "className": "absolute bg-white border border-[#ccc] border-solid content-stretch flex items-center justify-center p-[8px] right-[24px] rounded-[6px] top-[28px]"
+  },
+  {
+    "nodeId": "I1:863;1:860;1:1521",
+    "bbox": null,
+    "resolved": false,
+    "className": "content-stretch flex gap-[10px] items-center justify-center relative shrink-0"
+  },
+  {
+    "nodeId": "I1:863;1:860;1:1522",
+    "name": "ic / add-24",
+    "bbox": null,
+    "resolved": false,
+    "className": "relative shrink-0 size-[24px]"
+  },
+  {
+    "nodeId": "I1:863;1:861",
+    "name": "div",
+    "bbox": null,
+    "resolved": false,
+    "className": "absolute bg-[#eee] bottom-0 h-px left-[24px] right-[24px]"
+  },
+  {
+    "nodeId": "1:864",
+    "name": "card",
+    "bbox": [
+      360,
+      246,
+      384,
+      280
+    ],
+    "resolved": true,
+    "className": "absolute bg-white drop-shadow-[0px_2px_6px_rgba(0,0,0,0.08)] h-[280px] left-[360px] rounded-[16px] top-[246px] w-[384px]"
+  },
+  {
+    "nodeId": "I1:864;1:849",
+    "bbox": null,
+    "resolved": false,
+    "className": "[word-break:break-word] absolute bottom-[42px] font-['Pretendard:Regular'] leading-[18px] left-[24px] not-italic text-[#999] text-[12px] tracking-[-0.06px] translate-y-full whitespace-nowrap"
+  },
+  {
+    "nodeId": "I1:864;1:850",
+    "bbox": null,
+    "resolved": false,
+    "className": "[word-break:break-word] absolute font-['Pretendard:Regular'] inset-[116px_24px_58px_24px] leading-[0] not-italic overflow-hidden text-[#4a4a4a] text-[18px] text-ellipsis tracking-[-0.18px]"
+  },
+  {
+    "nodeId": "I1:864;1:851",
+    "name": "top",
+    "bbox": null,
+    "resolved": false,
+    "className": "absolute h-[100px] left-0 right-0 top-0"
+  },
+  {
+    "nodeId": "I1:864;1:853",
+    "bbox": null,
+    "resolved": false,
+    "className": "absolute content-stretch flex gap-[14px] items-start left-[24px] top-[28px]"
+  },
+  {
+    "nodeId": "I1:864;1:855",
+    "bbox": null,
+    "resolved": false,
+    "className": "content-stretch flex flex-col gap-[6px] items-start relative shrink-0"
+  },
+  {
+    "nodeId": "I1:864;1:856",
+    "name": "title",
+    "bbox": null,
+    "resolved": false,
+    "className": "[word-break:break-word] content-stretch flex gap-[6px] items-start leading-[24px] not-italic relative shrink-0 text-[20px] text-black whitespace-nowrap"
+  },
+  {
+    "nodeId": "I1:864;1:857",
+    "bbox": null,
+    "resolved": false,
+    "className": "font-['Pretendard:Regular'] relative shrink-0"
+  },
+  {
+    "nodeId": "I1:864;1:858",
+    "bbox": null,
+    "resolved": false,
+    "className": "font-['Pretendard:Bold'] relative shrink-0"
+  },
+  {
+    "nodeId": "I1:864;1:859",
+    "name": "badge",
+    "bbox": null,
+    "resolved": false,
+    "className": "bg-[#e4fbdc] content-stretch flex items-center justify-center px-[8px] relative rounded-[4px] shrink-0"
+  },
+  {
+    "nodeId": "I1:864;1:859;1:1645",
+    "bbox": null,
+    "resolved": false,
+    "className": "[word-break:break-word] font-['Pretendard:Regular'] leading-[20px] not-italic relative shrink-0 text-[#2ba600] text-[14px] tracking-[-0.07px] whitespace-nowrap"
+  },
+  {
+    "nodeId": "I1:864;1:860",
+    "name": "Button / Outlined-40-icon",
+    "bbox": null,
+    "resolved": false,
+    "className": "absolute bg-white border border-[#ccc] border-solid content-stretch flex items-center justify-center p-[8px] right-[24px] rounded-[6px] top-[28px]"
+  },
+  {
+    "nodeId": "I1:864;1:860;1:1521",
+    "bbox": null,
+    "resolved": false,
+    "className": "content-stretch flex gap-[10px] items-center justify-center relative shrink-0"
+  },
+  {
+    "nodeId": "I1:864;1:860;1:1522",
+    "name": "ic / add-24",
+    "bbox": null,
+    "resolved": false,
+    "className": "relative shrink-0 size-[24px]"
+  },
+  {
+    "nodeId": "I1:864;1:861",
+    "name": "div",
+    "bbox": null,
+    "resolved": false,
+    "className": "absolute bg-[#eee] bottom-0 h-px left-[24px] right-[24px]"
+  },
+  {
+    "nodeId": "1:865",
+    "name": "card",
+    "bbox": [
+      360,
+      554,
+      384,
+      280
+    ],
+    "resolved": true,
+    "className": "absolute bg-white drop-shadow-[0px_2px_6px_rgba(0,0,0,0.08)] h-[280px] left-[360px] rounded-[16px] top-[554px] w-[384px]"
+  },
+  {
+    "nodeId": "I1:865;1:849",
+    "bbox": null,
+    "resolved": false,
+    "className": "[word-break:break-word] absolute bottom-[42px] font-['Pretendard:Regular'] leading-[18px] left-[24px] not-italic text-[#999] text-[12px] tracking-[-0.06px] translate-y-full whitespace-nowrap"
+  },
+  {
+    "nodeId": "I1:865;1:850",
+    "bbox": null,
+    "resolved": false,
+    "className": "[word-break:break-word] absolute font-['Pretendard:Regular'] inset-[116px_24px_58px_24px] leading-[28px] not-italic overflow-hidden text-[#4a4a4a] text-[18px] text-ellipsis tracking-[-0.18px]"
+  },
+  {
+    "nodeId": "I1:865;1:851",
+    "name": "top",
+    "bbox": null,
+    "resolved": false,
+    "className": "absolute h-[100px] left-0 right-0 top-0"
+  },
+  {
+    "nodeId": "I1:865;1:853",
+    "bbox": null,
+    "resolved": false,
+    "className": "absolute content-stretch flex gap-[14px] items-start left-[24px] top-[28px]"
+  },
+  {
+    "nodeId": "I1:865;1:854",
+    "name": "Component 1",
+    "bbox": null,
+    "resolved": false,
+    "className": "bg-white border border-[#eee] border-solid overflow-clip relative rounded-[100px] shrink-0 size-[56px]"
+  },
+  {
+    "nodeId": "I1:865;1:854;1:638",
+    "name": "image 42",
+    "bbox": [
+      -20,
+      0,
+      84,
+      64
+    ],
+    "resolved": true,
+    "className": "-translate-x-1/2 -translate-y-1/2 absolute h-[64px] left-[calc(50%-6px)] top-[calc(50%+4px)] w-[84px]"
+  },
+  {
+    "nodeId": "I1:865;1:855",
+    "bbox": null,
+    "resolved": false,
+    "className": "content-stretch flex flex-col gap-[6px] items-start relative shrink-0"
+  },
+  {
+    "nodeId": "I1:865;1:856",
+    "name": "title",
+    "bbox": null,
+    "resolved": false,
+    "className": "[word-break:break-word] content-stretch flex gap-[6px] items-start leading-[24px] not-italic relative shrink-0 text-[20px] text-black whitespace-nowrap"
+  },
+  {
+    "nodeId": "I1:865;1:857",
+    "bbox": null,
+    "resolved": false,
+    "className": "font-['Pretendard:Regular'] relative shrink-0"
+  },
+  {
+    "nodeId": "I1:865;1:858",
+    "bbox": null,
+    "resolved": false,
+    "className": "font-['Pretendard:Bold'] relative shrink-0"
+  },
+  {
+    "nodeId": "I1:865;1:859",
+    "name": "badge",
+    "bbox": null,
+    "resolved": false,
+    "className": "bg-[#e2f5ff] content-stretch flex items-center justify-center px-[8px] relative rounded-[4px] shrink-0"
+  },
+  {
+    "nodeId": "I1:865;1:859;1:1647",
+    "bbox": null,
+    "resolved": false,
+    "className": "[word-break:break-word] font-['Pretendard:Regular'] leading-[20px] not-italic relative shrink-0 text-[#00a2fe] text-[14px] tracking-[-0.07px] whitespace-nowrap"
+  },
+  {
+    "nodeId": "I1:865;1:860",
+    "name": "Button / Outlined-40-icon",
+    "bbox": null,
+    "resolved": false,
+    "className": "absolute bg-white border border-[#ccc] border-solid content-stretch flex items-center justify-center p-[8px] right-[24px] rounded-[6px] top-[28px]"
+  },
+  {
+    "nodeId": "I1:865;1:860;1:1521",
+    "bbox": null,
+    "resolved": false,
+    "className": "content-stretch flex gap-[10px] items-center justify-center relative shrink-0"
+  },
+  {
+    "nodeId": "I1:865;1:860;1:1522",
+    "name": "ic / add-24",
+    "bbox": null,
+    "resolved": false,
+    "className": "relative shrink-0 size-[24px]"
+  },
+  {
+    "nodeId": "I1:865;1:861",
+    "name": "div",
+    "bbox": null,
+    "resolved": false,
+    "className": "absolute bg-[#eee] bottom-0 h-px left-[24px] right-[24px]"
+  },
+  {
+    "nodeId": "1:866",
+    "name": "card",
+    "bbox": [
+      767.94,
+      554,
+      384,
+      280
+    ],
+    "resolved": true,
+    "className": "absolute bg-white drop-shadow-[0px_2px_6px_rgba(0,0,0,0.08)] h-[280px] left-[calc(33.33%+128px)] rounded-[16px] top-[554px] w-[384px]"
+  },
+  {
+    "nodeId": "I1:866;1:849",
+    "bbox": null,
+    "resolved": false,
+    "className": "[word-break:break-word] absolute bottom-[42px] font-['Pretendard:Regular'] leading-[18px] left-[24px] not-italic text-[#999] text-[12px] tracking-[-0.06px] translate-y-full whitespace-nowrap"
+  },
+  {
+    "nodeId": "I1:866;1:850",
+    "bbox": null,
+    "resolved": false,
+    "className": "[word-break:break-word] absolute font-['Pretendard:Regular'] inset-[116px_24px_58px_24px] leading-[28px] not-italic overflow-hidden text-[#4a4a4a] text-[18px] text-ellipsis tracking-[-0.18px]"
+  },
+  {
+    "nodeId": "I1:866;1:851",
+    "name": "top",
+    "bbox": null,
+    "resolved": false,
+    "className": "absolute h-[100px] left-0 right-0 top-0"
+  },
+  {
+    "nodeId": "I1:866;1:853",
+    "bbox": null,
+    "resolved": false,
+    "className": "absolute content-stretch flex gap-[14px] items-start left-[24px] top-[28px]"
+  },
+  {
+    "nodeId": "I1:866;1:855",
+    "bbox": null,
+    "resolved": false,
+    "className": "content-stretch flex flex-col gap-[6px] items-start relative shrink-0"
+  },
+  {
+    "nodeId": "I1:866;1:856",
+    "name": "title",
+    "bbox": null,
+    "resolved": false,
+    "className": "[word-break:break-word] content-stretch flex gap-[6px] items-start leading-[24px] not-italic relative shrink-0 text-[20px] text-black whitespace-nowrap"
+  },
+  {
+    "nodeId": "I1:866;1:857",
+    "bbox": null,
+    "resolved": false,
+    "className": "font-['Pretendard:Regular'] relative shrink-0"
+  },
+  {
+    "nodeId": "I1:866;1:858",
+    "bbox": null,
+    "resolved": false,
+    "className": "font-['Pretendard:Bold'] relative shrink-0"
+  },
+  {
+    "nodeId": "I1:866;1:859",
+    "name": "badge",
+    "bbox": null,
+    "resolved": false,
+    "className": "bg-[#fff0d6] content-stretch flex items-center justify-center px-[8px] relative rounded-[4px] shrink-0"
+  },
+  {
+    "nodeId": "I1:866;1:859;1:1643",
+    "bbox": null,
+    "resolved": false,
+    "className": "[word-break:break-word] font-['Pretendard:Regular'] leading-[20px] not-italic relative shrink-0 text-[#ff8832] text-[14px] tracking-[-0.07px] whitespace-nowrap"
+  },
+  {
+    "nodeId": "I1:866;1:860",
+    "name": "Button / Outlined-40-icon",
+    "bbox": null,
+    "resolved": false,
+    "className": "absolute bg-white border border-[#ccc] border-solid content-stretch flex items-center justify-center p-[8px] right-[24px] rounded-[6px] top-[28px]"
+  },
+  {
+    "nodeId": "I1:866;1:860;1:1521",
+    "bbox": null,
+    "resolved": false,
+    "className": "content-stretch flex gap-[10px] items-center justify-center relative shrink-0"
+  },
+  {
+    "nodeId": "I1:866;1:860;1:1522",
+    "name": "ic / add-24",
+    "bbox": null,
+    "resolved": false,
+    "className": "relative shrink-0 size-[24px]"
+  },
+  {
+    "nodeId": "I1:866;1:861",
+    "name": "div",
+    "bbox": null,
+    "resolved": false,
+    "className": "absolute bg-[#eee] bottom-0 h-px left-[24px] right-[24px]"
+  },
+  {
+    "nodeId": "1:867",
+    "name": "card",
+    "bbox": [
+      1176.06,
+      246,
+      384,
+      280
+    ],
+    "resolved": true,
+    "className": "absolute bg-white drop-shadow-[0px_2px_6px_rgba(0,0,0,0.08)] h-[280px] left-[calc(66.67%-104px)] rounded-[16px] top-[246px] w-[384px]"
+  },
+  {
+    "nodeId": "I1:867;1:849",
+    "bbox": null,
+    "resolved": false,
+    "className": "[word-break:break-word] absolute bottom-[42px] font-['Pretendard:Regular'] leading-[18px] left-[24px] not-italic text-[#999] text-[12px] tracking-[-0.06px] translate-y-full whitespace-nowrap"
+  },
+  {
+    "nodeId": "I1:867;1:850",
+    "bbox": null,
+    "resolved": false,
+    "className": "[word-break:break-word] absolute font-['Pretendard:Regular'] inset-[116px_24px_58px_24px] leading-[0] not-italic overflow-hidden text-[#4a4a4a] text-[18px] text-ellipsis tracking-[-0.18px]"
+  },
+  {
+    "nodeId": "I1:867;1:851",
+    "name": "top",
+    "bbox": null,
+    "resolved": false,
+    "className": "absolute h-[100px] left-0 right-0 top-0"
+  },
+  {
+    "nodeId": "I1:867;1:853",
+    "bbox": null,
+    "resolved": false,
+    "className": "absolute content-stretch flex gap-[14px] items-start left-[24px] top-[28px]"
+  },
+  {
+    "nodeId": "I1:867;1:854",
+    "name": "Component 1",
+    "bbox": null,
+    "resolved": false,
+    "className": "bg-white border border-[#eee] border-solid overflow-clip relative rounded-[100px] shrink-0 size-[56px]"
+  },
+  {
+    "nodeId": "I1:867;1:854;1:640",
+    "name": "image 43",
+    "bbox": [
+      -6,
+      -10,
+      64,
+      96
+    ],
+    "resolved": true,
+    "className": "-translate-x-1/2 -translate-y-1/2 absolute h-[96px] left-[calc(50%-2px)] top-[calc(50%+10px)] w-[64px]"
+  },
+  {
+    "nodeId": "I1:867;1:855",
+    "bbox": null,
+    "resolved": false,
+    "className": "content-stretch flex flex-col gap-[6px] items-start relative shrink-0"
+  },
+  {
+    "nodeId": "I1:867;1:856",
+    "name": "title",
+    "bbox": null,
+    "resolved": false,
+    "className": "[word-break:break-word] content-stretch flex gap-[6px] items-start leading-[24px] not-italic relative shrink-0 text-[20px] text-black whitespace-nowrap"
+  },
+  {
+    "nodeId": "I1:867;1:857",
+    "bbox": null,
+    "resolved": false,
+    "className": "font-['Pretendard:Regular'] relative shrink-0"
+  },
+  {
+    "nodeId": "I1:867;1:858",
+    "bbox": null,
+    "resolved": false,
+    "className": "font-['Pretendard:Bold'] relative shrink-0"
+  },
+  {
+    "nodeId": "I1:867;1:860",
+    "name": "Button / Outlined-40-icon",
+    "bbox": null,
+    "resolved": false,
+    "className": "absolute bg-white border border-[#ccc] border-solid content-stretch flex items-center justify-center p-[8px] right-[24px] rounded-[6px] top-[28px]"
+  },
+  {
+    "nodeId": "I1:867;1:860;1:1521",
+    "bbox": null,
+    "resolved": false,
+    "className": "content-stretch flex gap-[10px] items-center justify-center relative shrink-0"
+  },
+  {
+    "nodeId": "I1:867;1:860;1:1522",
+    "name": "ic / add-24",
+    "bbox": null,
+    "resolved": false,
+    "className": "relative shrink-0 size-[24px]"
+  },
+  {
+    "nodeId": "I1:867;1:861",
+    "name": "div",
+    "bbox": null,
+    "resolved": false,
+    "className": "absolute bg-[#eee] bottom-0 h-px left-[24px] right-[24px]"
+  },
+  {
+    "nodeId": "1:868",
+    "name": "header",
+    "bbox": null,
+    "resolved": false,
+    "className": "absolute h-[65px] left-0 top-0 w-[1920px]"
+  },
+  {
+    "nodeId": "I1:868;1:642",
+    "name": "header",
+    "bbox": null,
+    "resolved": false,
+    "className": "-translate-y-1/2 absolute bg-white content-stretch flex items-center left-0 px-[360px] py-[11px] right-0 top-[calc(50%-0.5px)]"
+  },
+  {
+    "nodeId": "I1:868;1:643",
+    "bbox": null,
+    "resolved": false,
+    "className": "content-stretch flex gap-[944px] items-center relative shrink-0"
+  },
+  {
+    "nodeId": "I1:868;1:644",
+    "name": "logo",
+    "bbox": null,
+    "resolved": false,
+    "className": "h-[42px] relative shrink-0 w-[106px]"
+  },
+  {
+    "nodeId": "I1:868;1:645",
+    "bbox": null,
+    "resolved": false,
+    "className": "-translate-y-1/2 absolute content-stretch flex gap-[8px] items-center left-0 top-1/2"
+  },
+  {
+    "nodeId": "I1:868;1:646",
+    "name": "🎨 Icon Color",
+    "bbox": null,
+    "resolved": false,
+    "className": "h-[27.658px] relative shrink-0 w-[27.818px]"
+  },
+  {
+    "nodeId": "I1:868;1:647",
+    "bbox": null,
+    "resolved": false,
+    "className": "[word-break:break-word] flex flex-col font-['Poppins:Bold'] justify-center leading-[0] not-italic relative shrink-0 text-[#4a494f] text-[19.971px] text-center whitespace-nowrap"
+  },
+  {
+    "nodeId": "I1:868;1:649",
+    "name": "line",
+    "bbox": null,
+    "resolved": false,
+    "className": "absolute bg-[#ededed] bottom-0 h-px left-0 right-0"
+  },
+  {
+    "nodeId": "1:869",
+    "name": "header_service",
+    "bbox": null,
+    "resolved": false,
+    "className": "absolute h-[68px] left-0 top-[65px] w-[1920px]"
+  },
+  {
+    "nodeId": "I1:869;1:651",
+    "name": "header_service",
+    "bbox": null,
+    "resolved": false,
+    "className": "-translate-x-1/2 -translate-y-1/2 absolute bg-white content-stretch flex items-center left-1/2 px-[360px] py-[13px] top-1/2"
+  },
+  {
+    "nodeId": "I1:869;1:651;291:26004",
+    "bbox": null,
+    "resolved": false,
+    "className": "content-stretch flex gap-[263px] items-center relative shrink-0"
+  },
+  {
+    "nodeId": "I1:869;1:651;291:26005",
+    "bbox": null,
+    "resolved": false,
+    "className": "[word-break:break-word] font-['Pretendard:Bold'] leading-[42px] not-italic relative shrink-0 text-[#2b2b2b] text-[28px] tracking-[-0.28px] w-[227px]"
+  },
+  {
+    "nodeId": "I1:869;1:651;291:26006",
+    "bbox": null,
+    "resolved": false,
+    "className": "content-stretch flex gap-[28px] items-center relative shrink-0"
+  },
+  {
+    "nodeId": "I1:869;1:651;291:26007",
+    "bbox": null,
+    "resolved": false,
+    "className": "content-stretch flex gap-[11px] items-end leading-[0] relative shrink-0"
+  },
+  {
+    "nodeId": "I1:869;1:651;291:26008",
+    "bbox": null,
+    "resolved": false,
+    "className": "grid-cols-[max-content] grid-rows-[max-content] inline-grid place-items-start relative shrink-0"
+  },
+  {
+    "nodeId": "I1:869;1:651;291:26009",
+    "bbox": null,
+    "resolved": false,
+    "className": "col-1 grid-cols-[max-content] grid-rows-[max-content] inline-grid ml-0 mt-0 place-items-start relative row-1"
+  },
+  {
+    "nodeId": "I1:869;1:651;291:26010",
+    "bbox": null,
+    "resolved": false,
+    "className": "border-[1.4px] border-solid border-white col-1 ml-0 mt-0 overflow-clip relative rounded-[140px] row-1 size-[28px]"
+  },
+  {
+    "nodeId": "I1:869;1:651;291:26011",
+    "name": "image 45",
+    "bbox": null,
+    "resolved": false,
+    "className": "absolute left-[-26.4px] size-[70px] top-[-22.4px]"
+  },
+  {
+    "nodeId": "I1:869;1:651;291:26012",
+    "bbox": null,
+    "resolved": false,
+    "className": "col-1 grid-cols-[max-content] grid-rows-[max-content] inline-grid ml-[16px] mt-0 place-items-start relative row-1"
+  },
+  {
+    "nodeId": "I1:869;1:651;291:26013",
+    "bbox": null,
+    "resolved": false,
+    "className": "border-[1.4px] border-solid border-white col-1 ml-0 mt-0 overflow-clip relative rounded-[140px] row-1 size-[28px]"
+  },
+  {
+    "nodeId": "I1:869;1:651;291:26014",
+    "name": "image 42",
+    "bbox": [
+      -21,
+      -1.4,
+      58.8,
+      44.8
+    ],
+    "resolved": true,
+    "className": "-translate-x-1/2 -translate-y-1/2 absolute h-[44.8px] left-[calc(50%-5.6px)] top-[calc(50%+7px)] w-[58.8px]"
+  },
+  {
+    "nodeId": "I1:869;1:651;291:26015",
+    "bbox": null,
+    "resolved": false,
+    "className": "col-1 grid-cols-[max-content] grid-rows-[max-content] inline-grid ml-[32px] mt-0 place-items-start relative row-1"
+  },
+  {
+    "nodeId": "I1:869;1:651;291:26016",
+    "bbox": null,
+    "resolved": false,
+    "className": "border-[1.4px] border-solid border-white col-1 ml-0 mt-0 overflow-clip relative rounded-[140px] row-1 size-[28px]"
+  },
+  {
+    "nodeId": "I1:869;1:651;291:26017",
+    "name": "image 43",
+    "bbox": [
+      -9.8,
+      -9.8,
+      42,
+      63
+    ],
+    "resolved": true,
+    "className": "-translate-x-1/2 -translate-y-1/2 absolute h-[63px] left-[calc(50%-2.8px)] top-[calc(50%+7.7px)] w-[42px]"
+  },
+  {
+    "nodeId": "I1:869;1:651;291:26018",
+    "bbox": null,
+    "resolved": false,
+    "className": "col-1 grid-cols-[max-content] grid-rows-[max-content] inline-grid ml-[48px] mt-0 place-items-start relative row-1"
+  },
+  {
+    "nodeId": "I1:869;1:651;291:26019",
+    "bbox": null,
+    "resolved": false,
+    "className": "col-1 ml-0 mt-0 relative row-1 size-[28px]"
+  },
+  {
+    "nodeId": "I1:869;1:651;291:26020",
+    "bbox": null,
+    "resolved": false,
+    "className": "[word-break:break-word] col-1 font-['Pretendard:Medium'] leading-[18px] ml-[6px] mt-[5px] not-italic relative row-1 text-[#484848] text-[12px] whitespace-nowrap"
+  },
+  {
+    "nodeId": "I1:869;1:651;291:26021",
+    "bbox": null,
+    "resolved": false,
+    "className": "[word-break:break-word] font-['Pretendard:Regular'] not-italic relative shrink-0 text-[#181818] text-[18px] whitespace-nowrap"
+  },
+  {
+    "nodeId": "I1:869;1:651;291:26022",
+    "bbox": null,
+    "resolved": false,
+    "className": "bg-[#eee] h-[28px] relative shrink-0 w-px"
+  },
+  {
+    "nodeId": "I1:869;1:651;291:26023",
+    "bbox": null,
+    "resolved": false,
+    "className": "content-stretch flex gap-[8px] items-start relative shrink-0"
+  },
+  {
+    "nodeId": "I1:869;1:651;291:26024",
+    "bbox": null,
+    "resolved": false,
+    "className": "content-stretch flex gap-[2px] items-start relative shrink-0"
+  },
+  {
+    "nodeId": "I1:869;1:651;291:26025",
+    "bbox": null,
+    "resolved": false,
+    "className": "content-stretch flex items-start relative shrink-0"
+  },
+  {
+    "nodeId": "I1:869;1:651;291:26026",
+    "bbox": null,
+    "resolved": false,
+    "className": "content-stretch flex gap-[8px] items-start relative shrink-0"
+  },
+  {
+    "nodeId": "I1:869;1:651;291:26027",
+    "name": "badge_emoji",
+    "bbox": null,
+    "resolved": false,
+    "className": "bg-[rgba(0,0,0,0.54)] content-stretch flex flex-col items-start px-[12px] py-[8px] relative rounded-[32px] shrink-0"
+  },
+  {
+    "nodeId": "I1:869;1:651;291:26027;1:1649",
+    "name": "badge_emoji",
+    "bbox": null,
+    "resolved": false,
+    "className": "content-stretch flex gap-[2px] items-center relative shrink-0"
+  },
+  {
+    "nodeId": "I1:869;1:651;291:26027;1:1650",
+    "name": "ic / emoji",
+    "bbox": null,
+    "resolved": false,
+    "className": "overflow-clip relative shrink-0 size-[20px]"
+  },
+  {
+    "nodeId": "I1:869;1:651;291:26027;1:1651",
+    "bbox": null,
+    "resolved": false,
+    "className": "-translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['Pretendard:Regular'] justify-center leading-[0] left-[calc(50%-8px)] not-italic text-[16px] text-black top-[calc(50%-0.5px)] whitespace-nowrap"
+  },
+  {
+    "nodeId": "I1:869;1:651;291:26027;1:1652",
+    "bbox": null,
+    "resolved": false,
+    "className": "[word-break:break-word] flex flex-col font-['Pretendard:Regular'] justify-center leading-[0] not-italic relative shrink-0 text-[16px] text-white whitespace-nowrap"
+  },
+  {
+    "nodeId": "I1:869;1:651;291:26028",
+    "name": "badge_emoji",
+    "bbox": null,
+    "resolved": false,
+    "className": "bg-[rgba(0,0,0,0.54)] content-stretch flex flex-col items-start px-[12px] py-[8px] relative rounded-[32px] shrink-0"
+  },
+  {
+    "nodeId": "I1:869;1:651;291:26028;1:1649",
+    "name": "badge_emoji",
+    "bbox": null,
+    "resolved": false,
+    "className": "content-stretch flex gap-[2px] items-center relative shrink-0"
+  },
+  {
+    "nodeId": "I1:869;1:651;291:26028;1:1650",
+    "name": "ic / emoji",
+    "bbox": null,
+    "resolved": false,
+    "className": "overflow-clip relative shrink-0 size-[20px]"
+  },
+  {
+    "nodeId": "I1:869;1:651;291:26028;1:1651",
+    "bbox": null,
+    "resolved": false,
+    "className": "-translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['Pretendard:Regular'] justify-center leading-[0] left-[calc(50%-8px)] not-italic text-[16px] text-black top-[calc(50%-0.5px)] whitespace-nowrap"
+  },
+  {
+    "nodeId": "I1:869;1:651;291:26028;1:1652",
+    "bbox": null,
+    "resolved": false,
+    "className": "[word-break:break-word] flex flex-col font-['Pretendard:Regular'] justify-center leading-[0] not-italic relative shrink-0 text-[16px] text-white whitespace-nowrap"
+  },
+  {
+    "nodeId": "I1:869;1:651;291:26029",
+    "name": "badge_emoji",
+    "bbox": null,
+    "resolved": false,
+    "className": "bg-[rgba(0,0,0,0.54)] content-stretch flex flex-col items-start px-[12px] py-[8px] relative rounded-[32px] shrink-0"
+  },
+  {
+    "nodeId": "I1:869;1:651;291:26029;1:1649",
+    "name": "badge_emoji",
+    "bbox": null,
+    "resolved": false,
+    "className": "content-stretch flex gap-[2px] items-center relative shrink-0"
+  },
+  {
+    "nodeId": "I1:869;1:651;291:26029;1:1650",
+    "name": "ic / emoji",
+    "bbox": null,
+    "resolved": false,
+    "className": "overflow-clip relative shrink-0 size-[20px]"
+  },
+  {
+    "nodeId": "I1:869;1:651;291:26029;1:1651",
+    "bbox": null,
+    "resolved": false,
+    "className": "-translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['Pretendard:Regular'] justify-center leading-[0] left-[calc(50%-8px)] not-italic text-[16px] text-black top-[calc(50%-0.5px)] tracking-[-0.16px] whitespace-nowrap"
+  },
+  {
+    "nodeId": "I1:869;1:651;291:26029;1:1652",
+    "bbox": null,
+    "resolved": false,
+    "className": "[word-break:break-word] flex flex-col font-['Pretendard:Regular'] justify-center leading-[0] not-italic relative shrink-0 text-[16px] text-white whitespace-nowrap"
+  },
+  {
+    "nodeId": "I1:869;1:651;291:26030",
+    "name": "button",
+    "bbox": null,
+    "resolved": false,
+    "className": "relative shrink-0 size-[36px]"
+  },
+  {
+    "nodeId": "I1:869;1:651;291:26032",
+    "bbox": null,
+    "resolved": false,
+    "className": "content-stretch flex gap-[13px] items-center relative shrink-0"
+  },
+  {
+    "nodeId": "I1:869;1:651;291:26033",
+    "name": "Button / Outlined-36-icon",
+    "bbox": null,
+    "resolved": false,
+    "className": "bg-white border border-[#ccc] border-solid content-stretch flex items-center justify-center px-[16px] py-[6px] relative rounded-[6px] shrink-0"
+  },
+  {
+    "nodeId": "I1:869;1:651;291:26033;1:1559",
+    "bbox": null,
+    "resolved": false,
+    "className": "content-stretch flex gap-[4px] items-center justify-center relative shrink-0"
+  },
+  {
+    "nodeId": "I1:869;1:651;291:26033;1:1561",
+    "bbox": null,
+    "resolved": false,
+    "className": "[word-break:break-word] font-['Pretendard:Medium'] leading-[24px] not-italic relative shrink-0 text-[#181818] text-[16px] whitespace-nowrap"
+  },
+  {
+    "nodeId": "I1:869;1:651;291:26034",
+    "bbox": null,
+    "resolved": false,
+    "className": "bg-[#eee] h-[28px] relative shrink-0 w-px"
+  },
+  {
+    "nodeId": "I1:869;1:651;291:26035",
+    "name": "Button / Outlined-36-icon",
+    "bbox": null,
+    "resolved": false,
+    "className": "bg-white border border-[#ccc] border-solid content-stretch flex items-center justify-center px-[16px] py-[6px] relative rounded-[6px] shrink-0"
+  },
+  {
+    "nodeId": "I1:869;1:651;291:26035;1:1559",
+    "bbox": null,
+    "resolved": false,
+    "className": "content-stretch flex gap-[4px] items-center justify-center relative shrink-0"
+  },
+  {
+    "nodeId": "I1:869;1:651;291:26035;1:1560",
+    "name": "ic / add-24",
+    "bbox": null,
+    "resolved": false,
+    "className": "relative shrink-0 size-[24px]"
+  },
+  {
+    "nodeId": "I1:869;1:652",
+    "name": "line",
+    "bbox": null,
+    "resolved": false,
+    "className": "absolute bg-[#ededed] bottom-[-1px] h-px left-0 right-0"
+  }
+]

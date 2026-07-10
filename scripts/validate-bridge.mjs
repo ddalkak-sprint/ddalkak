@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// 디자인 브릿지 JSON을 shared/bridge.schema.json (v2.0) 기준으로 검증한다.
+// 디자인 브릿지 JSON을 shared/bridge.schema.json (v2.0/v2.1) 기준으로 검증한다.
 // 사용법: node scripts/validate-bridge.mjs <path-to-bridge.json>
 //
 // 핵심 검사:
@@ -16,6 +16,8 @@
 
 import { readFileSync, existsSync } from "node:fs";
 import { dirname, resolve, join } from "node:path";
+import { fileURLToPath } from "node:url";
+import Ajv from "ajv";
 
 const target = process.argv[2];
 if (!target) {
@@ -27,6 +29,15 @@ const data = JSON.parse(readFileSync(target, "utf8"));
 const errors = [];
 const warnings = [];
 
+const schemaPath = resolve(dirname(fileURLToPath(import.meta.url)), "..", "shared", "bridge.schema.json");
+const schema = JSON.parse(readFileSync(schemaPath, "utf8"));
+const ajv = new Ajv({ allErrors: true, strict: false });
+if (!ajv.validate(schema, data)) {
+  for (const issue of ajv.errors ?? []) {
+    errors.push(`[schema${issue.instancePath || "/"}] ${issue.message}`);
+  }
+}
+
 const NODE_TYPES = ["frame", "group", "text", "image", "vector", "shape", "line", "ellipse", "component", "instance"];
 
 // ── 1. 필수 구조 ──────────────────────────────────────────
@@ -35,6 +46,20 @@ if (!["section", "page"].includes(data.meta?.mode)) errors.push("meta.mode는 se
 if (!["2.0", "2.1"].includes(data.meta?.schemaVersion)) errors.push(`meta.schemaVersion은 "2.0"|"2.1" (현재: ${JSON.stringify(data.meta?.schemaVersion)})`);
 if (typeof data.tokens !== "object" || data.tokens === null) errors.push("tokens 객체 누락 (무손실 참조의 원본 사전)");
 if (!Array.isArray(data.screens) || data.screens.length === 0) errors.push("screens 비어있음");
+if (data.meta?.completeness === "partial" && !(data.meta.errors?.length > 0)) {
+  errors.push("meta.completeness가 partial이면 meta.errors에 실패한 추출 패스를 기록해야 함");
+}
+if (data.meta?.completeness === "full" && data.meta.errors?.length) {
+  errors.push("meta.completeness가 full인데 meta.errors가 존재함");
+}
+const assetIds = new Set();
+for (const [i, asset] of (data.assets ?? []).entries()) {
+  if (assetIds.has(asset.id)) errors.push(`[assets[${i}]] id '${asset.id}' 중복`);
+  assetIds.add(asset.id);
+  if (data.meta?.fidelity !== "summary" && !asset.export) {
+    warnings.push(`[assets[${i}](${asset.id})] export 누락 — lossless 소비 단계에서 실제 파일을 찾을 수 없음`);
+  }
+}
 
 // ── 2. 토큰 참조 해석기 (무손실 보장의 핵심) ──────────────
 // '@color.primary' → tokens.color.primary 가 존재해야 원본 복원 가능.
@@ -81,6 +106,8 @@ let semanticCount = 0;  // semanticRole 부여 수
 let inferredNodes = 0;  // source:"inferred" 합성 래퍼 수 (rules §12-2)
 let lowTrustNodes = 0;  // confidence 마킹된 비-vision 노드 수 (rules §8-1 재조합 서브트리)
 const suggested = new Map(); // suggestedComponent → 발생 수 (rules §12-1)
+const adaptiveGroups = new Map(); // group → [{ screen, variant, matchKeys }]
+let currentMatchKeys = null;
 
 // 수치 진실성 검사용 수집 (rules §9-1) — 순회하며 모으고 화면 순회 후 판정
 const pixelCheckNodes = []; // { at, node, absX, absY, ancestorFill }
@@ -113,7 +140,8 @@ function checkAutoLayoutArithmetic(node, at) {
   if (!L || !["row", "column"].includes(L.mode) || !Array.isArray(node.bbox)) return;
   const kids = (node.children ?? []).filter((c) => Array.isArray(c.bbox));
   if (!kids.length) return;
-  const pad = Array.isArray(L.padding) ? L.padding : [0, 0, 0, 0]; // [t,r,b,l]
+  const rawPad = Array.isArray(L.padding) ? L.padding : [0, 0, 0, 0]; // [t,r,b,l]
+  const pad = rawPad.map((value) => typeof resolveValue(value) === "number" ? resolveValue(value) : 0);
   const gap = typeof resolveValue(L.gap) === "number" ? resolveValue(L.gap) : 0;
   const horizontalIsPrimary = L.mode === "row";
   const TOL = 2;
@@ -146,6 +174,7 @@ function checkContainmentAndOverlap(node, at) {
   const kids = (node.children ?? []).filter((c) => Array.isArray(c.bbox));
   const TOL = 4;
   for (const [ci, c] of kids.entries()) {
+    if (node.style?.clipsContent) continue; // image crop 등 의도적으로 큰 자식을 잘라 쓰는 컨테이너
     const [cx, cy, cw, ch] = c.bbox;
     if (cx < -TOL || cy < -TOL || cx + cw > pw + TOL || cy + ch > ph + TOL) {
       warnings.push(`[${at}.children[${ci}]] 자식 bbox [${c.bbox}]가 부모 크기 [${pw}×${ph}]를 벗어남 (rules §9-1)`);
@@ -186,11 +215,30 @@ function walkNodes(nodes, where, absX = 0, absY = 0, ancestorFill = null) {
     if (!NODE_TYPES.includes(node.type)) {
       errors.push(`[${at}] 알 수 없는 node.type '${node.type}'`);
     }
+    if (node.matchKey !== undefined) {
+      if (currentMatchKeys.has(node.matchKey)) errors.push(`[${at}] 같은 화면에서 matchKey '${node.matchKey}' 중복`);
+      currentMatchKeys.add(node.matchKey);
+    }
+    if (node.ref !== undefined && !(data.assets ?? []).some((asset) => asset.id === node.ref)) {
+      errors.push(`[${at}] ref '${node.ref}'에 해당하는 assets[] 항목 없음`);
+    }
+    for (const [axisName, anchor] of [["anchorX", node.constraints?.anchorX], ["anchorY", node.constraints?.anchorY]]) {
+      if (!anchor) continue;
+      if (anchor.kind === "percent" && typeof anchor.percent !== "number") {
+        errors.push(`[${at}.constraints.${axisName}] percent 앵커에 percent 숫자 필수`);
+      }
+      if (anchor.kind === "opposite" && typeof anchor.offset !== "number") {
+        errors.push(`[${at}.constraints.${axisName}] opposite 앵커에 offset 숫자 필수`);
+      }
+      if (anchor.kind === "stretch" && (typeof anchor.start !== "number" || typeof anchor.end !== "number")) {
+        errors.push(`[${at}.constraints.${axisName}] stretch 앵커에 start/end 숫자 필수`);
+      }
+    }
     if ((node.type === "component" || node.type === "instance") && node.isDesignSystemComponent === undefined) {
       warnings.push(`[${at}] component/instance 노드에 isDesignSystemComponent 미기입 (rules §3)`);
     }
-    if (node.type === "text" && node.content === undefined && node.runs === undefined) {
-      warnings.push(`[${at}] text 노드에 content/runs 둘 다 없음`);
+    if (node.type === "text" && node.content === undefined && node.runs === undefined && node.contentExpr === undefined) {
+      warnings.push(`[${at}] text 노드에 content/runs/contentExpr가 모두 없음`);
     }
     // 비전 보강 태깅 규약 (rules §11) + 재조합 저신뢰 마킹 (rules §8-1)
     if (node.source === "vision") {
@@ -240,8 +288,31 @@ function walkNodes(nodes, where, absX = 0, absY = 0, ancestorFill = null) {
 // ── 4. 화면 순회 ──────────────────────────────────────────
 for (const [i, screen] of (data.screens ?? []).entries()) {
   const at = `screens[${i}](${screen.name ?? "?"})`;
+  currentMatchKeys = new Set();
   if ((screen.breakpoint && !screen.variantGroup) || (!screen.breakpoint && screen.variantGroup)) {
     warnings.push(`[${at}] breakpoint/variantGroup은 함께 있어야 함 (rules §5)`);
+  }
+  if (screen.adaptive) {
+    const { group, variant, source, confidence, conditions } = screen.adaptive;
+    if (source === "inferred" && (typeof confidence !== "number" || confidence < 0 || confidence > 1)) {
+      errors.push(`[${at}.adaptive] source가 inferred이면 confidence(0~1) 필수`);
+    }
+    for (const [axis, range] of [["width", conditions?.width], ["height", conditions?.height]]) {
+      if (range && typeof range.min === "number" && typeof range.max === "number" && range.min > range.max) {
+        errors.push(`[${at}.adaptive.conditions.${axis}] min(${range.min})이 max(${range.max})보다 큼`);
+      }
+    }
+    const expectedOrientation = screen.frame?.w === screen.frame?.h ? "square"
+      : screen.frame?.w > screen.frame?.h ? "landscape" : "portrait";
+    if (conditions?.orientation && screen.frame?.w && screen.frame?.h && conditions.orientation !== expectedOrientation) {
+      warnings.push(`[${at}] adaptive orientation(${conditions.orientation})과 frame(${screen.frame.w}×${screen.frame.h})이 모순`);
+    }
+    const entries = adaptiveGroups.get(group) ?? [];
+    if (entries.some((entry) => entry.variant === variant)) {
+      errors.push(`[${at}.adaptive] group '${group}' 안에서 variant '${variant}' 중복`);
+    }
+    entries.push({ screen: at, variant, matchKeys: currentMatchKeys });
+    adaptiveGroups.set(group, entries);
   }
   if (!screen.screenshot) {
     warnings.push(`[${at}] screenshot 미첨부 — 교차검증(rules §8) 불가`);
@@ -253,6 +324,22 @@ for (const [i, screen] of (data.screens ?? []).entries()) {
     if (open.length) warnings.push(`[${at}] 미해결 불일치 ${open.length}건 (rules §8)`);
   }
   walkNodes(screen.nodes, at);
+}
+
+for (const [group, entries] of adaptiveGroups) {
+  if (entries.length < 2) {
+    warnings.push(`adaptive group '${group}'에 관측 화면이 1개뿐 — 화면 간 적응 규칙을 확정할 수 없음 (rules §5)`);
+    continue;
+  }
+  const keyedEntries = entries.filter((entry) => entry.matchKeys.size > 0);
+  if (keyedEntries.length !== entries.length) {
+    warnings.push(`adaptive group '${group}' 일부 화면에 matchKey가 없음 — 변형 간 노드 대응을 기계 검증할 수 없음 (rules §5)`);
+    continue;
+  }
+  const shared = [...keyedEntries[0].matchKeys].filter((key) => keyedEntries.every((entry) => entry.matchKeys.has(key)));
+  if (shared.length === 0) {
+    warnings.push(`adaptive group '${group}'에 모든 변형이 공유하는 matchKey가 없음 (rules §5)`);
+  }
 }
 
 // ── 5. 재조합 confidence 마킹 검사 (rules §8-1) ────────────
@@ -338,9 +425,7 @@ if (errors.length) {
   console.error("❌ 검증 실패:\n - " + errors.join("\n - "));
   process.exit(1);
 }
-if (warnings.length) {
-  console.warn("⚠️  경고:\n - " + warnings.join("\n - "));
-}
+if (warnings.length) console.warn("⚠️  조건부 통과 경고:\n - " + warnings.join("\n - "));
 const extra = [];
 if (semanticCount) extra.push(`semanticRole ${semanticCount}개`);
 if (visionNodes) extra.push(`vision 노드 ${visionNodes}개`);
@@ -348,4 +433,5 @@ if (lowTrustNodes) extra.push(`저신뢰(재조합) 노드 ${lowTrustNodes}개`)
 if (inferredNodes) extra.push(`inferred 그룹 ${inferredNodes}개`);
 if (pixelChecked) extra.push(`edge 대조 ${pixelChecked}노드`);
 if (suggested.size) extra.push(`suggestedComponent ${[...suggested.keys()].join("/")}`);
-console.log(`✅ 브릿지 검증 통과 (v${data.meta.schemaVersion}): ${target}${extra.length ? "  [" + extra.join(", ") + "]" : ""}`);
+const status = warnings.length ? "⚠️  브릿지 조건부 통과" : "✅ 브릿지 검증 통과";
+console.log(`${status} (v${data.meta.schemaVersion}): ${target}${extra.length ? "  [" + extra.join(", ") + "]" : ""}`);

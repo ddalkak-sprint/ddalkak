@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "ddalkak/bridge.schema.json",
   "title": "Ddalkak Design Bridge",
-  "description": "Figma를 무손실로 정규화한 디자인 브릿지(v2.1). 토큰을 쓰되 원본값이 항상 복원 가능하고, MCP 상세정보와 스크린샷 교차검증 결과, 반응형 그룹, 비전 의미 레이어(semanticRole, rules §11)까지 담는다. bridge 단계가 산출, plan/code/verify가 소비하는 SSOT. 규칙: figma-extraction-rules.md",
+  "description": "Figma를 무손실로 정규화한 플랫폼 중립 디자인 브릿지(v2.1). 토큰, MCP 상세정보, 스크린샷 교차검증, 적응형 화면 조건, 비전 의미 레이어를 담는다. bridge 단계가 산출하고 plan/code/verify가 소비하는 SSOT. 규칙: figma-extraction-rules.md",
   "type": "object",
   "required": ["meta", "tokens", "screens"],
   "properties": {
@@ -14,7 +14,22 @@
         "mode": { "enum": ["section", "page"] },
         "schemaVersion": { "enum": ["2.0", "2.1"], "description": "2.1 = 비전 의미 레이어(semanticRole/source/confidence) 추가. 2.0 파일도 유효(신필드는 전부 optional)" },
         "fidelity": { "enum": ["lossless", "summary"], "default": "lossless", "description": "lossless=구조 접기만 하고 속성·자산 전량 캡처, summary=축약 허용" },
-        "extractedAt": { "type": "string" }
+        "extractedAt": { "type": "string" },
+        "extractorFingerprint": { "type": "string", "description": "스키마·규칙·변환기 버전 지문. sourceFingerprint와 둘 다 같을 때만 기존 bridge 재사용" },
+        "coordinateSpace": { "$ref": "#/$defs/coordinateSpace" },
+        "completeness": { "enum": ["full", "partial"], "description": "partial이면 errors에 실패한 추출 패스를 기록한다. rules §6/§15" },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["pass", "reason"],
+            "properties": {
+              "pass": { "enum": ["structure", "detail", "tokens", "component-map", "assets", "screenshots", "semantic"] },
+              "tool": { "type": "string" },
+              "reason": { "type": "string" }
+            }
+          }
+        }
       }
     },
     "tokens": {
@@ -36,8 +51,10 @@
         "properties": {
           "name":  { "type": "string" },
           "frame": { "type": "object", "properties": { "w": { "type": "number" }, "h": { "type": "number" } } },
-          "breakpoint":   { "enum": ["mobile", "tablet", "desktop", "default"], "description": "반응형 그룹의 일부일 때만. rules §5" },
+          "breakpoint":   { "enum": ["mobile", "tablet", "desktop", "default"], "description": "하위 호환용 화면 이름표. 실제 적응 조건은 adaptive에 기록. rules §5" },
           "variantGroup": { "type": "string", "description": "같은 논리 화면의 breakpoint들을 묶는 이름. rules §5" },
+          "adaptive":     { "$ref": "#/$defs/adaptiveVariant" },
+          "environment":  { "$ref": "#/$defs/environment" },
           "screenshot":   { "type": "string", "description": "이 화면의 스크린샷 asset id. 교차검증(rules §8)과 verify 단계가 재사용." },
           "reconciliation": { "$ref": "#/$defs/reconciliation" },
           "nodes": { "type": "array", "items": { "$ref": "#/$defs/node" } }
@@ -64,14 +81,22 @@
       "required": ["type"],
       "properties": {
         "type":     { "enum": ["frame", "group", "text", "image", "vector", "shape", "line", "ellipse", "component", "instance"] },
+        "nodeId":   { "type": "string", "description": "Figma data-node-id. 원본 추적용이며 화면 간 동일성 키와는 구분한다" },
+        "matchKey": { "type": "string", "description": "같은 adaptive group의 화면 변형 사이에서 동일한 논리 노드를 연결하는 안정 키. 확신 있을 때만 기록. rules §5" },
         "name":     { "type": "string", "description": "Figma 레이어 이름 (퍼블 시맨틱 힌트)" },
         "content":  { "type": "string", "description": "text 노드의 전체 평문 (편의용). 부분 스타일은 runs 참조" },
+        "contentExpr": { "type": "string", "description": "정적으로 해석하지 못한 원본 텍스트 표현식. 조용한 소실 방지용" },
         "runs":     { "type": "array", "items": { "$ref": "#/$defs/textRun" }, "description": "text 노드의 부분 스타일 구간 (mixed runs 무손실)" },
         "ref":      { "type": "string", "description": "image/vector 노드가 가리키는 assets[].id" },
         "layout":   { "$ref": "#/$defs/layout" },
         "constraints": { "$ref": "#/$defs/constraints" },
         "style":    { "$ref": "#/$defs/style" },
         "bbox":     { "type": "array", "items": { "type": "number" }, "minItems": 4, "maxItems": 4, "description": "[x, y, w, h] (부모 프레임 기준)" },
+        "size":     { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2, "description": "[w, h]. flow 자식처럼 위치를 부모 layout이 결정할 때 사용" },
+        "sizing":   { "$ref": "#/$defs/sizing" },
+        "behavior": { "$ref": "#/$defs/behavior" },
+        "textBehavior": { "$ref": "#/$defs/textBehavior" },
+        "assetFit": { "enum": ["cover", "contain", "fill", "none"], "description": "image/vector 콘텐츠의 플랫폼 중립 크기 맞춤 방식" },
         "children": { "type": "array", "items": { "$ref": "#/$defs/node" } },
         "componentName":           { "type": "string", "description": "type=component/instance일 때. rules §3" },
         "isDesignSystemComponent": { "type": "boolean" },
@@ -88,8 +113,10 @@
       "type": "object",
       "description": "오토레이아웃. rules §7",
       "properties": {
-        "mode":    { "enum": ["row", "column", "wrap", "none"] },
-        "padding": { "type": "array", "items": { "type": "number" }, "minItems": 4, "maxItems": 4, "description": "[top, right, bottom, left]" },
+        "mode":    { "enum": ["row", "column", "grid", "wrap", "none"], "description": "wrap은 v2.0 호환값. 신규 산출은 row|column + wrap 필드를 사용" },
+        "wrap":    { "enum": ["no-wrap", "wrap"] },
+        "grid":    { "$ref": "#/$defs/grid" },
+        "padding": { "type": "array", "items": { "type": ["number", "string"] }, "minItems": 4, "maxItems": 4, "description": "[top, right, bottom, left]. 숫자 또는 '@spacing.*' 토큰 참조" },
         "gap":     { "type": ["number", "string"], "description": "숫자 또는 '@spacing.md' 토큰 참조" },
         "primaryAxisAlign": { "enum": ["start", "center", "end", "space-between"] },
         "counterAxisAlign": { "enum": ["start", "center", "end", "stretch"] },
@@ -104,10 +131,123 @@
     },
     "constraints": {
       "type": "object",
-      "description": "부모 리사이즈 시 이 노드의 반응 규칙. rules §5",
+      "description": "부모 리사이즈 시 이 노드의 반응 규칙. rules §5. anchorX/anchorY는 MCP 코드가 준 앵커 원형(무손실, rules §8-3) — bbox는 캡처 프레임 크기에서의 환산값일 뿐이므로, 퍼센트/반대변 앵커는 원형을 함께 보존해야 code가 반응형 배치를 재현할 수 있다",
       "properties": {
         "horizontal": { "enum": ["left", "right", "left-right", "center", "scale"] },
-        "vertical":   { "enum": ["top", "bottom", "top-bottom", "center", "scale"] }
+        "vertical":   { "enum": ["top", "bottom", "top-bottom", "center", "scale"] },
+        "anchorX": { "$ref": "#/$defs/anchor" },
+        "anchorY": { "$ref": "#/$defs/anchor" }
+      }
+    },
+    "anchor": {
+      "type": "object",
+      "description": "축 하나의 앵커 원형. percent: 부모 크기 P% + offset 위치. opposite: 반대변에서 offset. stretch: 시작·끝 inset. translate: 앵커가 요소의 중심 기준",
+      "required": ["kind"],
+      "properties": {
+        "kind":      { "enum": ["percent", "opposite", "stretch"] },
+        "percent":   { "type": "number" },
+        "offset":    { "type": "number" },
+        "start":     { "type": "number", "description": "stretch 시작변 inset. 가로축은 left, 세로축은 top에 해당" },
+        "end":       { "type": "number", "description": "stretch 끝변 inset. 가로축은 right, 세로축은 bottom에 해당" },
+        "translate": { "type": "boolean" }
+      }
+    },
+    "coordinateSpace": {
+      "type": "object",
+      "required": ["unit"],
+      "properties": {
+        "unit": { "enum": ["design-unit", "px", "pt", "dp"], "description": "출처가 명시되지 않으면 design-unit. 플랫폼 소비 단계가 px/pt/dp로 해석" },
+        "scale": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    },
+    "adaptiveVariant": {
+      "type": "object",
+      "required": ["group", "variant", "source"],
+      "properties": {
+        "group": { "type": "string" },
+        "variant": { "type": "string", "description": "mobile 같은 고정 enum이 아닌 원본 변형 이름" },
+        "conditions": {
+          "type": "object",
+          "properties": {
+            "width": { "$ref": "#/$defs/range" },
+            "height": { "$ref": "#/$defs/range" },
+            "orientation": { "enum": ["portrait", "landscape", "square"] },
+            "platform": { "enum": ["web", "ios", "android", "desktop", "unknown"] },
+            "colorScheme": { "enum": ["light", "dark"] }
+          }
+        },
+        "source": { "enum": ["observed", "inferred"] },
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "range": {
+      "type": "object",
+      "properties": {
+        "min": { "type": "number" },
+        "max": { "type": "number" }
+      }
+    },
+    "environment": {
+      "type": "object",
+      "properties": {
+        "orientation": { "enum": ["portrait", "landscape", "square"] },
+        "platform": { "enum": ["web", "ios", "android", "desktop", "unknown"] },
+        "density": { "type": "number", "exclusiveMinimum": 0 },
+        "colorScheme": { "enum": ["light", "dark"] },
+        "safeArea": { "type": "array", "items": { "type": "number" }, "minItems": 4, "maxItems": 4, "description": "[top,right,bottom,left]. Figma에 명시된 경우만 기록" }
+      }
+    },
+    "sizing": {
+      "type": "object",
+      "properties": {
+        "horizontal": { "$ref": "#/$defs/sizingAxis" },
+        "vertical": { "$ref": "#/$defs/sizingAxis" },
+        "aspectRatio": { "type": "number", "exclusiveMinimum": 0 },
+        "grow": { "type": "number", "minimum": 0 },
+        "shrink": { "type": "number", "minimum": 0 }
+      }
+    },
+    "sizingAxis": {
+      "type": "object",
+      "required": ["mode"],
+      "properties": {
+        "mode": { "enum": ["fixed", "content", "fill", "fraction"] },
+        "value": { "type": "number" },
+        "min": { "type": "number" },
+        "max": { "type": "number" }
+      }
+    },
+    "behavior": {
+      "type": "object",
+      "properties": {
+        "positioning": { "enum": ["flow", "overlay"] },
+        "visibility": { "enum": ["visible", "hidden"] },
+        "overflowX": { "enum": ["visible", "clip", "scroll", "auto"] },
+        "overflowY": { "enum": ["visible", "clip", "scroll", "auto"] }
+      }
+    },
+    "textBehavior": {
+      "type": "object",
+      "properties": {
+        "wrap": { "enum": ["wrap", "no-wrap"] },
+        "overflow": { "enum": ["visible", "clip", "ellipsis"] },
+        "maxLines": { "type": "integer", "minimum": 1 },
+        "autoSize": { "enum": ["fixed", "height", "width-height"] }
+      }
+    },
+    "grid": {
+      "type": "object",
+      "properties": {
+        "columns": { "type": "array", "items": { "$ref": "#/$defs/gridTrack" } },
+        "rows": { "type": "array", "items": { "$ref": "#/$defs/gridTrack" } }
+      }
+    },
+    "gridTrack": {
+      "type": "object",
+      "required": ["mode"],
+      "properties": {
+        "mode": { "enum": ["content", "fixed", "fill", "fraction"] },
+        "value": { "type": "number" }
       }
     },
     "style": {
@@ -116,7 +256,7 @@
       "properties": {
         "fills":        { "type": "array", "items": { "$ref": "#/$defs/fill" } },
         "strokes":      { "type": "array", "items": { "$ref": "#/$defs/stroke" } },
-        "effects":      { "type": "array", "items": { "$ref": "#/$defs/effect" } },
+        "effects":      { "type": "array", "items": { "oneOf": [{ "$ref": "#/$defs/effect" }, { "type": "string", "pattern": "^@effect\\." }] } },
         "cornerRadius": { "type": ["number", "string", "array"], "description": "숫자 / '@radius.md' / [tl,tr,br,bl]" },
         "opacity":      { "type": "number" },
         "blendMode":    { "type": "string" },

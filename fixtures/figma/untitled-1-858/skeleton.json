@@ -1,0 +1,150 @@
+{
+  "source": "get_metadata",
+  "cacheDir": "fixtures/figma/untitled-1-858",
+  "roots": [
+    {
+      "id": "1:858",
+      "figmaType": "frame",
+      "name": "[PC] /post/{id}/edit  (image case)",
+      "bbox": [
+        0,
+        0,
+        1920,
+        1080
+      ],
+      "children": [
+        {
+          "id": "1:859",
+          "figmaType": "frame",
+          "name": "Frame 2384",
+          "bbox": [
+            0,
+            132,
+            1920,
+            928
+          ],
+          "children": [
+            {
+              "id": "1:860",
+              "figmaType": "rounded-rectangle",
+              "name": "arches-national-park-gabc4bf2ae_1920 1",
+              "bbox": [
+                0,
+                -216,
+                1920,
+                1359.9171142578125
+              ]
+            },
+            {
+              "id": "1:861",
+              "figmaType": "rounded-rectangle",
+              "name": "overlay",
+              "bbox": [
+                0,
+                2,
+                1920,
+                926
+              ]
+            }
+          ]
+        },
+        {
+          "id": "1:862",
+          "figmaType": "instance",
+          "name": "card",
+          "bbox": [
+            1176,
+            554,
+            384,
+            280
+          ],
+          "metadataLeaf": true
+        },
+        {
+          "id": "1:863",
+          "figmaType": "instance",
+          "name": "card",
+          "bbox": [
+            768,
+            246,
+            384,
+            280
+          ],
+          "metadataLeaf": true
+        },
+        {
+          "id": "1:864",
+          "figmaType": "instance",
+          "name": "card",
+          "bbox": [
+            360,
+            246,
+            384,
+            280
+          ],
+          "metadataLeaf": true
+        },
+        {
+          "id": "1:865",
+          "figmaType": "instance",
+          "name": "card",
+          "bbox": [
+            360,
+            554,
+            384,
+            280
+          ],
+          "metadataLeaf": true
+        },
+        {
+          "id": "1:866",
+          "figmaType": "instance",
+          "name": "card",
+          "bbox": [
+            768,
+            554,
+            384,
+            280
+          ],
+          "metadataLeaf": true
+        },
+        {
+          "id": "1:867",
+          "figmaType": "instance",
+          "name": "card",
+          "bbox": [
+            1176,
+            246,
+            384,
+            280
+          ],
+          "metadataLeaf": true
+        },
+        {
+          "id": "1:868",
+          "figmaType": "instance",
+          "name": "header",
+          "bbox": [
+            0,
+            0,
+            1920,
+            65
+          ],
+          "metadataLeaf": true
+        },
+        {
+          "id": "1:869",
+          "figmaType": "instance",
+          "name": "header_service",
+          "bbox": [
+            0,
+            65,
+            1920,
+            68
+          ],
+          "metadataLeaf": true
+        }
+      ]
+    }
+  ]
+}
