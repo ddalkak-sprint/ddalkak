@@ -46,6 +46,7 @@ async function testPixelPass() {
 
     const result = await runVisualVerify({ project: projectRoot, name: "pass", url });
     assert(result.status === "pass", `expected pass, got ${result.status}`);
+    assert(result.implementationRate === Number((result.confidence * 100).toFixed(3)), `expected implementationRate from confidence, got ${result.implementationRate}`);
     assert(exitCodeForResult(result) === 0, "expected exit 0");
     assert(result.checks.gating === false, "expected checks.gating=false");
   });

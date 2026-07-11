@@ -25,6 +25,7 @@ export function writeReport({ result, reportPath }) {
     "## 결과 요약",
     `- 판정: ${icon} ${statusLabel(result.status)}`,
     `- 신뢰도: ${(result.confidence * 100).toFixed(3)}%`,
+    `- 구현율: ${formatRate(result.implementationRate ?? result.confidence * 100)}%`,
     `- 픽셀 불일치: ${result.pixels.mismatch.toLocaleString()} / ${result.pixels.total.toLocaleString()} (${(result.pixels.mismatchRatio * 100).toFixed(3)}%)`,
     result.statuses ? `- 세부 판정: pixel=${result.statuses.pixel}, style(advisory)=${result.statuses.style}` : null,
     result.checks ? `- Style checks(advisory, not gate): pass ${result.checks.summary.pass}, warn ${result.checks.summary.warn}, fail ${result.checks.summary.fail}` : null,
@@ -90,4 +91,8 @@ function formatValue(value) {
   if (Array.isArray(value)) return `[${value.join(", ")}]`;
   if (value && typeof value === "object") return JSON.stringify(value);
   return String(value);
+}
+
+function formatRate(value) {
+  return Number(value).toFixed(3);
 }
