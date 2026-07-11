@@ -1,7 +1,6 @@
 #!/usr/bin/env node
-// 생성된 코드를 plan.md·브릿지 JSON 기준으로 점검한다 (code 단계 결정론 게이트).
-// 사용법: node scripts/validate-code.mjs <plan.md> [bridge.json] [projectRoot]
-//   bridge 인자를 생략하면 `.ddalkak/plan/<name>.plan.md` → `.ddalkak/bridge/<name>.bridge.json`로 추론한다.
+// 생성된 코드를 plan.md 기준으로 점검한다 (code 단계 결정론 게이트).
+// 사용법: node scripts/validate-code.mjs <plan.md> [projectRoot]
 //   projectRoot를 생략하면 `.ddalkak`를 담은 상위 디렉토리(plan 경로 기준)로 추론한다.
 //
 // verify(4단계, Playwright)는 무겁다. 이 스크립트는 그 앞단에서 LLM 없이 결정론적으로
@@ -10,10 +9,8 @@
 //  error(구조 — 계약 위반):
 //   - plan.md의 '파일 계획' 표 부재/붕괴 (검사 자체가 성립 안 함)
 //   - '파일 계획' 표의 신규/수정 파일이 프로젝트에 없음 (code-rules §2 — 신규 미생성·수정 대상 부재)
-//   - 브릿지에 렌더 노드가 있는데 코드에 data-dk 앵커가 하나도 없음 (code-rules §4-3 전면 누락)
 //
 //  warning(완결성/품질 — plan 구멍·규약 이탈):
-//   - 코드의 data-dk 값이 브릿지 노드 경로로 해석되지 않음 (앵커 오배치 — verify 매칭실패 원인, §4-3)
 //   - 코드의 arbitrary 시각값([Npx]/#hex/rgba/shadow)이 plan에 없음
 //       = code가 §4-1로 즉석 환산했다는 신호 → 다음 plan에 흡수할 값 (code-rules §4·§11 완결성 루프)
 //   - arbitrary hex가 소문자 (§4-1 대문자 규약)
@@ -22,11 +19,11 @@
 //   `.ddalkak/reports/<name>.code-gaps.json`으로 떨군다 — plan 재실행이 표로 흡수하는 입력.
 
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
-import { basename, dirname, join } from "node:path";
+import { basename, join } from "node:path";
 
 const planPath = process.argv[2];
 if (!planPath) {
-  console.error("사용법: node scripts/validate-code.mjs <plan.md> [bridge.json] [projectRoot]");
+  console.error("사용법: node scripts/validate-code.mjs <plan.md> [projectRoot]");
   process.exit(1);
 }
 if (!existsSync(planPath)) {
@@ -40,25 +37,8 @@ const warnings = [];
 
 // ── 경로 추론 ─────────────────────────────────────────────
 const posixPlan = planPath.replace(/\\/g, "/");
-const bridgePath = process.argv[3] ?? inferBridgePath(posixPlan);
-const projectRoot = process.argv[4] ?? inferProjectRoot(posixPlan);
+const projectRoot = process.argv[3] ?? inferProjectRoot(posixPlan);
 
-let bridge = null;
-if (bridgePath && existsSync(bridgePath)) {
-  try {
-    bridge = JSON.parse(readFileSync(bridgePath, "utf8"));
-  } catch (err) {
-    errors.push(`브릿지 파싱 실패 (${bridgePath}): ${err.message}`);
-  }
-} else {
-  warnings.push(`브릿지 JSON을 찾지 못해 data-dk 경로 검사를 생략 (인자로 경로를 넘기면 검사). 추론 경로: ${bridgePath ?? "-"}`);
-}
-
-function inferBridgePath(p) {
-  const m = p.match(/^(.*)\/plan\/(.+)\.plan\.md$/);
-  if (!m) return null;
-  return `${m[1]}/bridge/${m[2]}.bridge.json`;
-}
 // `.ddalkak`를 담은 디렉토리 = 프로젝트 루트 (파일 계획 표의 경로가 이 기준의 상대경로)
 function inferProjectRoot(p) {
   const m = p.match(/^(.*)\/\.ddalkak\/plan\//);
@@ -122,52 +102,7 @@ for (const cells of fileRows) {
 const SRC_EXT = /\.(tsx?|jsx?|vue|svelte|css|scss|html)$/i;
 const scanFiles = plannedFiles.filter((f) => f.exists && SRC_EXT.test(f.path));
 
-// ── 2. data-dk 앵커 커버리지 (code-rules §4-3) ────────────
-// 브릿지 노드 트리를 children[i] 인덱스 경로로 해석 가능한지 대조한다.
-function resolveDk(dk, screens) {
-  const idx = [...dk.matchAll(/children\[(\d+)\]/g)].map((m) => +m[1]);
-  if (!idx.length) return false;
-  // 단일 screen이 기본. 여러 screen이면 어느 하나에서라도 해석되면 유효로 본다.
-  for (const screen of screens) {
-    let cur = { children: screen.nodes || [] };
-    let ok = true;
-    for (const i of idx) {
-      if (!cur || !Array.isArray(cur.children) || !cur.children[i]) { ok = false; break; }
-      cur = cur.children[i];
-    }
-    if (ok) return true;
-  }
-  return false;
-}
-
-if (bridge && scanFiles.length) {
-  const screens = bridge.screens || [];
-  let renderableNodes = 0;
-  (function count(ns) {
-    for (const n of ns || []) { renderableNodes++; if (n.children) count(n.children); }
-  })(screens.flatMap((s) => s.nodes || []));
-
-  const anchors = new Set();
-  const unresolved = new Set();
-  for (const f of scanFiles) {
-    const t = readFileSync(f.abs, "utf8");
-    for (const m of t.matchAll(/data-dk=["']([^"']+)["']/g)) anchors.add(m[1]);
-  }
-  for (const dk of anchors) {
-    if (!resolveDk(dk, screens)) unresolved.add(dk);
-  }
-
-  if (renderableNodes > 0 && anchors.size === 0) {
-    errors.push(`브릿지 렌더 노드 ${renderableNodes}개가 있으나 코드에 data-dk 앵커가 하나도 없음 — verify가 폴백 매칭으로 떨어져 통과율이 깎인다 (code-rules §4-3)`);
-  }
-  for (const dk of [...unresolved].sort()) {
-    warnings.push(`data-dk="${dk}"가 브릿지 노드 경로로 해석되지 않음 — 앵커 오배치(verify 매칭실패 위험, code-rules §4-3)`);
-  }
-  const resolved = anchors.size - unresolved.size;
-  globalThis.__coverage = renderableNodes ? `${resolved}/${renderableNodes} 노드 (${Math.round((resolved / renderableNodes) * 100)}%)` : "-";
-}
-
-// ── 3. arbitrary 시각값 완결성 역검출 (code-rules §4·§11) ─
+// ── 2. arbitrary 시각값 완결성 역검출 (code-rules §4·§11) ─
 // 코드에 쓰인 arbitrary 시각값 중 plan 어디에도 없는 것 = code가 즉석 환산한 값 = plan 구멍.
 // `수정` 파일(tailwind.config.js 등)은 다른 화면 토큰이 누적돼 있어 이번 plan 구멍이 아니므로,
 // 이번 화면 렌더용으로 새로 지은 `신규` 소스만 대상으로 한다.
@@ -199,7 +134,7 @@ for (const v of [...lowercaseHex].sort()) {
 }
 
 // ── 부수 출력: code-gaps 리포트 (plan 흡수 입력) ──────────
-if (bridge && missingValues.length) {
+if (missingValues.length) {
   const name = basename(posixPlan).replace(/\.plan\.md$/, "");
   const reportDir = join(projectRoot, ".ddalkak", "reports");
   try {
@@ -222,6 +157,5 @@ if (errors.length) {
 if (warnings.length) {
   console.warn("⚠️  완결성 경고:\n - " + warnings.join("\n - "));
 }
-const cov = globalThis.__coverage ? `  data-dk 커버리지: ${globalThis.__coverage}` : "";
 const gap = globalThis.__gapReport ? `  gap 리포트: ${globalThis.__gapReport}` : "";
-console.log(`✅ code 구조 검증 통과: ${planPath}${bridge ? "" : "  (구조만 — 브릿지 미연결)"}${cov}${gap}`);
+console.log(`✅ code 구조 검증 통과: ${planPath}${gap}`);

@@ -9,8 +9,7 @@ const tests = [
   ["pixel pass returns exit 0", testPixelPass],
   ["pixel fail returns exit 1", testPixelFail],
   ["style fail is advisory and keeps pixel pass", testStyleAdvisory],
-  ["data-dk exact match wins over fallback", testDataDkExactMatch],
-  ["anchor diagnostics report duplicate unknown and missing", testAnchorDiagnostics],
+  ["content+geometry match works without data-dk", testContentGeometryMatch],
   ["non-body selector returns execution error", testSelectorError],
   ["missing baseline returns config error", testMissingBaseline]
 ];
@@ -47,6 +46,7 @@ async function testPixelPass() {
 
     const result = await runVisualVerify({ project: projectRoot, name: "pass", url });
     assert(result.status === "pass", `expected pass, got ${result.status}`);
+    assert(result.implementationRate === Number((result.confidence * 100).toFixed(3)), `expected implementationRate from confidence, got ${result.implementationRate}`);
     assert(exitCodeForResult(result) === 0, "expected exit 0");
     assert(result.checks.gating === false, "expected checks.gating=false");
   });
@@ -113,64 +113,31 @@ async function testSelectorError() {
   });
 }
 
-async function testDataDkExactMatch() {
-  await withProject("vv-dk-", async (projectRoot) => {
+// data-dk 앵커 없이 텍스트 내용과 기하만으로 노드↔DOM이 매칭되는지 확인한다.
+async function testContentGeometryMatch() {
+  await withProject("vv-match-", async (projectRoot) => {
     const url = dataUrl(textPage({
       color: "rgb(255, 0, 0)",
-      text: "Rendered copy",
-      dataDk: "children[0]"
+      text: "Hello"
     }));
     await writeBaseline({ projectRoot, url, viewport: { width: 160, height: 40 } });
     writeBridge({
       projectRoot,
-      name: "dk",
+      name: "match",
       frame: { w: 160, h: 40 },
       node: textNode({
-        content: "Bridge copy",
+        content: "Hello",
         fill: "#ff0000",
-        bbox: [80, 0, 80, 20]
+        bbox: [0, 0, 160, 20]
       })
     });
 
-    const result = await runVisualVerify({ project: projectRoot, name: "dk", url });
+    const result = await runVisualVerify({ project: projectRoot, name: "match", url });
     const match = result.matches.find((item) => item.dkPath === "children[0]");
-    assert(match?.matched === true, "expected data-dk match");
-    assert(match.strategy === "data-dk-exact", `expected data-dk-exact, got ${match?.strategy}`);
-    assert(match.confidence === 1, `expected confidence 1, got ${match?.confidence}`);
-    assert(match.dataDk === "children[0]", `expected data-dk value, got ${match?.dataDk}`);
-    assert(result.anchors.summary.exact === 1, `expected one exact anchor, got ${result.anchors.summary.exact}`);
-    assert(result.anchors.summary.duplicate === 0, "expected no duplicate anchors");
-  });
-}
-
-async function testAnchorDiagnostics() {
-  await withProject("vv-anchor-", async (projectRoot) => {
-    const url = dataUrl(`<!doctype html><html><body style="margin:0;background:#fff">
-      <div data-dk="children[0]" style="color:rgb(255,0,0);font-size:16px;font-weight:400;line-height:20px;font-family:Arial,sans-serif">Hello</div>
-      <span data-dk="children[0]" style="display:block;width:1px;height:1px"></span>
-      <span data-dk="children[99]" style="display:block;width:1px;height:1px"></span>
-    </body></html>`);
-    await writeBaseline({ projectRoot, url, viewport: { width: 180, height: 50 } });
-    writeBridge({
-      projectRoot,
-      name: "anchor",
-      frame: { w: 180, h: 50 },
-      node: {
-        type: "frame",
-        name: "root",
-        bbox: [0, 0, 180, 50],
-        children: [
-          textNode({ fill: "#ff0000" })
-        ]
-      }
-    });
-
-    const result = await runVisualVerify({ project: projectRoot, name: "anchor", url });
-    assert(result.anchors.gating === false, "expected anchors.gating=false");
-    assert(result.anchors.summary.duplicate === 1, `expected duplicate=1, got ${result.anchors.summary.duplicate}`);
-    assert(result.anchors.summary.unknown === 1, `expected unknown=1, got ${result.anchors.summary.unknown}`);
-    assert(result.anchors.summary.missing >= 1, `expected at least one missing, got ${result.anchors.summary.missing}`);
-    assert(exitCodeForResult(result) === 0, "expected anchor diagnostics not to affect exit code");
+    assert(match?.matched === true, "expected content/geometry match");
+    assert(match.strategy.includes("text"), `expected text-based strategy, got ${match?.strategy}`);
+    assert(match.dataDk === undefined, "expected no dataDk field on match");
+    assert(result.anchors === undefined, "expected no anchors block in result");
   });
 }
 
@@ -262,9 +229,8 @@ function textNode({ content = "Hello", fill, bbox = [0, 0, 40, 20] }) {
   };
 }
 
-function textPage({ color, text = "Hello", dataDk = "" }) {
-  const dkAttr = dataDk ? ` data-dk="${dataDk}"` : "";
-  return `<!doctype html><html><body style="margin:0;background:#fff"><div${dkAttr} style="color:${color};font-size:16px;font-weight:400;line-height:20px;font-family:Arial, sans-serif">${text}</div></body></html>`;
+function textPage({ color, text = "Hello" }) {
+  return `<!doctype html><html><body style="margin:0;background:#fff"><div style="color:${color};font-size:16px;font-weight:400;line-height:20px;font-family:Arial, sans-serif">${text}</div></body></html>`;
 }
 
 function boxPage({ color }) {

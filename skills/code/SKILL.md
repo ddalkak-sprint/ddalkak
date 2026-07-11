@@ -33,12 +33,12 @@ description: plan.md를 읽어 실제 코드를 생성한다. 파일 계획·구
 5. **타입 체크**가 필수 게이트(§9) — full 프로덕션 빌드는 반복 게이트에서 생략.
 6. **정적 게이트**: `node ${CLAUDE_PLUGIN_ROOT}/scripts/validate-code.mjs <plan.md>` 실행(§9). error는 고쳐 재실행하고,
    warning으로 나온 `.ddalkak/reports/<name>.code-gaps.json`(plan에 없어 즉석 환산한 값)은 plan 완결성 피드백으로 남긴다.
-7. 생성·수정 파일 목록, data-dk 커버리지·gap 목록, 렌더 방법(`npm run dev`), 다음 단계(verify)를 사용자에게 보고.
+7. 생성·수정 파일 목록, gap 목록, 렌더 방법(`npm run dev`), 다음 단계(verify)를 사용자에게 보고.
 
 ## 절차 (fix — code-rules §10)
-1. `.ddalkak/reports/<name>.<breakpoint>.visual.json` 로드 → `checks.items[]`에서 `status: "fail"` 항목 수집 (§10-1).
-2. 각 항목의 `nodePath`로 `matches[]`를 조인해 `dkPath`·`strategy` 확보. `data-dk-exact`인 것만 자동 수정 대상,
-   나머지는 제외 목록에 담는다 (§10-2·§10-4).
-3. `data-dk="<dkPath>"` 요소를 특정해 짚어진 속성 **1개만** `expected` 목표로 규칙대로 교체 (§10-3). 새 설계 금지.
+1. verify 리포트 로드 → 위반 항목 수집 (§10-1).
+2. 각 항목이 가리키는 **소스 위치**(파일:줄)로 수정 지점을 특정한다. 소스 위치가 없는 항목(verify가 요소를
+   특정하지 못한 경우)은 제외 목록에 담는다 (§10-2·§10-4).
+3. 그 소스 위치의 요소에서 짚어진 속성 **1개만** `expected` 목표로 규칙대로 교체 (§10-3). 새 설계 금지.
 4. 빌드(§9) → verify 재실행으로 해당 항목 해소 확인. 개선 없이 2회 연속 실패면 중단 (§10-4).
 5. 고친 항목·수정 파일·재검증 결과와 **제외한 항목·사유**를 보고 (§10-5).

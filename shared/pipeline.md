@@ -9,7 +9,7 @@
 | 2 | plan      | bridge.json (+design.md) | `.ddalkak/plan/<name>.plan.md` | 퓨리 |
 | 3 | code      | plan.md (+design.md), 또는 fix 모드 시 verify `visual.json` | 프로젝트 소스 파일 | 퓨리 |
 | 4 | verify    | code + bridge.json | `.ddalkak/reports/<name>.verify.md` (+ `<name>.<breakpoint>.visual.json`) | 글랜·렉스 |
-| 5 | finalize  | verify.md | 최종 요약 + config 완료 표기 | 글랜·렉스 |
+| 5 | finalize  | `.ddalkak/reports/<name>.<breakpoint>.visual.json` | `.ddalkak/reports/<name>.final.json` + `.final.md` | 글랜·렉스 |
 
 ## 대상 프로젝트 산출물 레이아웃
 ```
@@ -19,7 +19,11 @@
     ├── ddalkak.config.json      # figmaUrl, mode, 단계별 상태(done/skip)
     ├── bridge/<name>.bridge.json
     ├── plan/<name>.plan.md
-    └── reports/<name>.verify.md
+    └── reports/
+        ├── <name>.verify.md
+        ├── <name>.<breakpoint>.visual.json
+        ├── <name>.final.json
+        └── <name>.final.md
 ```
 
 ## skip / 계속 게이트
