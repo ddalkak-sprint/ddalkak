@@ -5,15 +5,19 @@ description: 검증 리포트를 바탕으로 파이프라인을 마무리한다
 
 # [5] 마무리 검증  (글랜·렉스)
 
-파이프라인을 닫는 단계. 검증 결과를 사람이 읽기 좋게 정리하고 후속 조치를 정한다.
+파이프라인을 닫는 단계. verify가 만든 `visual.json`을 기준으로 최종 구현율과 남은 불일치를 고정 포맷으로 정리한다.
 
 ## 입력
-- `.ddalkak/reports/<name>.verify.md`
+- `.ddalkak/reports/<name>.<breakpoint>.visual.json`
+- 보조 확인용 `.ddalkak/reports/<name>.verify.md`
 
 ## 동작
-1. 검증에서 남은 불일치 항목 재확인.
-2. 사용자에게 [수정 진행 / 그대로 확정 / 재검증] 확인.
-3. `.ddalkak/ddalkak.config.json`에 완료 상태 기록.
-4. 전체 파이프라인 최종 요약(무엇을 만들었고, 무엇이 남았는지) 보고.
+1. `visual.json.implementationRate`를 최종 구현율로 사용한다. 없으면 하위 호환을 위해 `confidence * 100`으로 계산한다.
+2. `.ddalkak/reports/<name>.final.json`과 `.ddalkak/reports/<name>.final.md`를 생성한다.
+3. 최종 산출물에는 판정, 구현율, pass/fail 기준, 주요 mismatch region, anchor coverage, 자동 수정 제외 후보를 포함한다.
+4. fail/conditional이어도 finalize 산출물은 남긴다. 설정 오류로 `visual.json`이 없으면 실패한다.
 
-<!-- TODO: 확정 후 산출물 아카이브/정리 규칙 채우기 -->
+## 실행
+```bash
+node ${CLAUDE_PLUGIN_ROOT}/scripts/finalize-report.mjs --project <project> --name <name>
+```

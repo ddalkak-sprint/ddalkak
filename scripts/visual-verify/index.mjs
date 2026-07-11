@@ -43,6 +43,7 @@ export async function runVisualVerify(args = {}) {
     threshold: run.thresholds.pixelmatch
   });
   const confidence = roundMetric(diff.confidence);
+  const implementationRate = roundRate(confidence * 100);
   const regions = collectRegions(run.screen, diff, run.thresholds);
   const pixelStatus = decideStatus({ confidence, regions, thresholds: run.thresholds });
   const { matches, anchors } = matchBridgeToDom({ screen: run.screen, domSnapshot: capture.domSnapshot });
@@ -57,6 +58,7 @@ export async function runVisualVerify(args = {}) {
     status,
     passed: status === "pass",
     confidence,
+    implementationRate,
     statuses: {
       pixel: pixelStatus,
       style: styleStatus
@@ -98,6 +100,10 @@ export function exitCodeForResult(result) {
 
 function roundMetric(value) {
   return Number(value.toFixed(6));
+}
+
+function roundRate(value) {
+  return Number(value.toFixed(3));
 }
 
 function stripInternalMatchFields(match) {
