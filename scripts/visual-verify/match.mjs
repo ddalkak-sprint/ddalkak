@@ -26,7 +26,6 @@ export function matchBridgeToDom({ screen, domSnapshot }) {
       domId: match.candidate?.id ?? null,
       domKind: match.candidate?.kind ?? null,
       tag: match.candidate?.tag ?? null,
-      dataDk: candidateDataDk(match.candidate),
       text: match.candidate?.text ?? "",
       bbox: match.candidate ? boxArray(match.candidate.bbox) : null,
       confidence: roundMetric(match.confidence),
@@ -40,10 +39,7 @@ export function matchBridgeToDom({ screen, domSnapshot }) {
       domCandidate: match.candidate ?? null
     };
   });
-  return {
-    matches,
-    anchors: collectAnchorDiagnostics({ bridgeNodes, domSnapshot, matches })
-  };
+  return { matches };
 }
 
 function walkBridgeNode({ node, parentAbs, path, dkPath, nodes }) {
@@ -77,77 +73,19 @@ function walkBridgeNode({ node, parentAbs, path, dkPath, nodes }) {
   }
 }
 
+// 노드↔DOM 대응은 내용(텍스트)과 기하로만 특정한다. data-dk 앵커에는 의존하지 않는다 —
+// 앵커는 생성 LLM이 부착하므로 코드에 오류가 있을수록 함께 무너지고, 정합성을 독립 검증할 수 없다.
 function bestDomMatch(bridgeNode, domSnapshot) {
   const candidates = [
     ...domSnapshot.elements.map((candidate) => ({ ...candidate, source: "element" })),
     ...domSnapshot.textNodes.map((candidate) => ({ ...candidate, source: "text" }))
   ];
-  const exact = candidates.find((candidate) => candidateDataDk(candidate) === bridgeNode.dkPath);
-  if (exact) {
-    return {
-      candidate: exact,
-      confidence: 1,
-      strategy: "data-dk-exact"
-    };
-  }
-
   let best = { candidate: null, confidence: 0, strategy: "none" };
   for (const candidate of candidates) {
     const score = scoreCandidate(bridgeNode, candidate);
     if (score.confidence > best.confidence) best = { candidate, ...score };
   }
   return best;
-}
-
-function candidateDataDk(candidate) {
-  return candidate?.attributes?.dataDk ?? candidate?.dataDk ?? "";
-}
-
-function collectAnchorDiagnostics({ bridgeNodes, domSnapshot, matches }) {
-  const bridgeByDk = new Map(bridgeNodes.map((node) => [node.dkPath, node]));
-  const domByDk = new Map();
-  for (const candidate of domSnapshot.elements) {
-    const dataDk = candidateDataDk(candidate);
-    if (!dataDk) continue;
-    if (!domByDk.has(dataDk)) domByDk.set(dataDk, []);
-    domByDk.get(dataDk).push(candidate);
-  }
-
-  const duplicates = [...domByDk.entries()]
-    .filter(([, candidates]) => candidates.length > 1)
-    .map(([dataDk, candidates]) => ({
-      dataDk,
-      domIds: candidates.map((candidate) => candidate.id)
-    }));
-  const unknown = [...domByDk.entries()]
-    .filter(([dataDk]) => !bridgeByDk.has(dataDk))
-    .map(([dataDk, candidates]) => ({
-      dataDk,
-      domIds: candidates.map((candidate) => candidate.id)
-    }));
-  const missing = bridgeNodes
-    .filter((node) => !domByDk.has(node.dkPath))
-    .map((node) => ({
-      dkPath: node.dkPath,
-      nodePath: node.path,
-      nodeType: node.type
-    }));
-  const exact = matches.filter((match) => match.strategy === "data-dk-exact").length;
-
-  return {
-    gating: false,
-    summary: {
-      bridge: bridgeNodes.length,
-      dom: [...domByDk.values()].reduce((total, candidates) => total + candidates.length, 0),
-      exact,
-      missing: missing.length,
-      duplicate: duplicates.length,
-      unknown: unknown.length
-    },
-    duplicates,
-    missing,
-    unknown
-  };
 }
 
 function scoreCandidate(bridgeNode, candidate) {

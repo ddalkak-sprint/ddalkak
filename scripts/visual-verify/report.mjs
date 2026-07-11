@@ -9,7 +9,6 @@ export function writeReport({ result, reportPath }) {
     .filter((item) => item.status !== "pass")
     .sort(compareCheckPriority)
     .slice(0, 12);
-  const anchorIssues = collectAnchorIssues(result.anchors).slice(0, 12);
 
   const lines = [
     `# verify.md — ${result.name}`,
@@ -29,7 +28,6 @@ export function writeReport({ result, reportPath }) {
     `- 구현율: ${formatRate(result.implementationRate ?? result.confidence * 100)}%`,
     `- 픽셀 불일치: ${result.pixels.mismatch.toLocaleString()} / ${result.pixels.total.toLocaleString()} (${(result.pixels.mismatchRatio * 100).toFixed(3)}%)`,
     result.statuses ? `- 세부 판정: pixel=${result.statuses.pixel}, style(advisory)=${result.statuses.style}` : null,
-    result.anchors ? `- Anchors(advisory): exact ${result.anchors.summary.exact} / bridge ${result.anchors.summary.bridge}, missing ${result.anchors.summary.missing}, duplicate ${result.anchors.summary.duplicate}, unknown ${result.anchors.summary.unknown}` : null,
     result.checks ? `- Style checks(advisory, not gate): pass ${result.checks.summary.pass}, warn ${result.checks.summary.warn}, fail ${result.checks.summary.fail}` : null,
     `- 기준값: pass ≥ ${(result.thresholds.pass * 100).toFixed(1)}%, conditional ≥ ${(result.thresholds.conditional * 100).toFixed(1)}%, pixelmatch threshold ${result.thresholds.pixelmatch}`,
     "",
@@ -41,16 +39,6 @@ export function writeReport({ result, reportPath }) {
 
   for (const region of topRegions) {
     lines.push(`| ${escapeCell(region.id)} | ${region.type} | [${region.bbox.join(", ")}] | ${(region.mismatchRatio * 100).toFixed(3)}% | ${region.severity} |`);
-  }
-
-  lines.push("", "## Anchors (advisory)");
-  if (anchorIssues.length) {
-    lines.push("| type | data-dk / dkPath | detail |", "|---|---:|---|");
-    for (const issue of anchorIssues) {
-      lines.push(`| ${issue.type} | ${escapeCell(issue.key)} | ${escapeCell(issue.detail)} |`);
-    }
-  } else {
-    lines.push("- data-dk anchor issue 없음");
   }
 
   lines.push("", "## Style checks (advisory, not gate)");
@@ -72,27 +60,6 @@ export function writeReport({ result, reportPath }) {
   );
 
   writeFileSync(reportPath, `${lines.join("\n")}\n`);
-}
-
-function collectAnchorIssues(anchors) {
-  if (!anchors) return [];
-  return [
-    ...anchors.duplicates.map((item) => ({
-      type: "duplicate",
-      key: item.dataDk,
-      detail: item.domIds.join(", ")
-    })),
-    ...anchors.unknown.map((item) => ({
-      type: "unknown",
-      key: item.dataDk,
-      detail: item.domIds.join(", ")
-    })),
-    ...anchors.missing.map((item) => ({
-      type: "missing",
-      key: item.dkPath,
-      detail: `${item.nodePath} (${item.nodeType})`
-    }))
-  ];
 }
 
 function statusLabel(status) {

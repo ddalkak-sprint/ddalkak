@@ -46,7 +46,7 @@ export async function runVisualVerify(args = {}) {
   const implementationRate = roundRate(confidence * 100);
   const regions = collectRegions(run.screen, diff, run.thresholds);
   const pixelStatus = decideStatus({ confidence, regions, thresholds: run.thresholds });
-  const { matches, anchors } = matchBridgeToDom({ screen: run.screen, domSnapshot: capture.domSnapshot });
+  const { matches } = matchBridgeToDom({ screen: run.screen, domSnapshot: capture.domSnapshot });
   const checks = collectStyleChecks({ bridge: run.bridge, screen: run.screen, matches, domSnapshot: capture.domSnapshot });
   const styleStatus = statusFromChecks(checks);
   const status = pixelStatus;
@@ -84,7 +84,6 @@ export async function runVisualVerify(args = {}) {
       selector: run.selector
     },
     regions,
-    anchors,
     matches: matches.map(stripInternalMatchFields),
     checks
   };
@@ -117,7 +116,6 @@ function stripInternalMatchFields(match) {
     domId: match.domId,
     domKind: match.domKind,
     tag: match.tag,
-    dataDk: match.dataDk,
     text: match.text,
     bbox: match.bbox,
     confidence: match.confidence,

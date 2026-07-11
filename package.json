@@ -9,6 +9,7 @@
   "scripts": {
     "validate:bridge": "node scripts/validate-bridge.mjs",
     "validate:plan": "node scripts/validate-plan.mjs",
+    "verify:observe": "node scripts/verify-observe/cli.mjs",
     "visual:verify": "node scripts/visual-verify/cli.mjs",
     "finalize:report": "node scripts/finalize-report.mjs",
     "ddalkak:run": "node scripts/ddalkak-run.mjs",

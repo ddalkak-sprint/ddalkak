@@ -45,7 +45,6 @@ export async function collectDomSnapshot(page) {
         bbox,
         style,
         attributes: {
-          dataDk: element.getAttribute("data-dk") ?? "",
           href: element.getAttribute("href") ?? "",
           alt: element.getAttribute("alt") ?? "",
           type: element.getAttribute("type") ?? "",
@@ -77,7 +76,6 @@ export async function collectDomSnapshot(page) {
           text,
           bbox: rect,
           style,
-          dataDk: parent.getAttribute("data-dk") ?? "",
           parentText: normalize(parent.innerText || parent.textContent)
         });
       }
