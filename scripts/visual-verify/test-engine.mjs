@@ -11,6 +11,7 @@ const tests = [
   ["style fail is advisory and keeps pixel pass", testStyleAdvisory],
   ["content+geometry match works without data-dk", testContentGeometryMatch],
   ["non-web target is blocked until provider exists", testNonWebTargetBlocked],
+  ["flutter target captures via playwright, pixel-only without DOM", testFlutterTargetPixelOnly],
   ["non-body selector returns execution error", testSelectorError],
   ["missing baseline returns config error", testMissingBaseline]
 ];
@@ -136,8 +137,42 @@ async function testNonWebTargetBlocked() {
 
     await assertRejects(
       () => runVisualVerify({ project: projectRoot, name: "ios" }),
-      (error) => error.name === "VisualVerifyCaptureError" && error.message.includes("only the web Playwright provider is implemented")
+      (error) => error.name === "VisualVerifyCaptureError" && error.message.includes("only the web and flutter")
     );
+  });
+}
+
+// Flutter Web renders to a canvas (no meaningful DOM). The flutter provider reuses the Playwright
+// screenshot path from a served URL, and the engine must verify by pixels alone — style "n/a",
+// no DOM matches, never a silent pass.
+async function testFlutterTargetPixelOnly() {
+  await withProject("vv-flutter-", async (projectRoot) => {
+    const url = dataUrl(textPage({ color: "rgb(255, 0, 0)" }));
+    await writeBaseline({ projectRoot, url, viewport: { width: 120, height: 40 } });
+    writeBridge({
+      projectRoot,
+      name: "flutter",
+      node: textNode({ fill: "#ff0000" }),
+      verify: {
+        defaultTarget: "flutter-preview",
+        targets: [{
+          id: "flutter-preview",
+          platform: "flutter",
+          screenshotProvider: "flutter",
+          entry: { type: "url", url },
+          viewport: { w: 120, h: 40 }
+        }]
+      }
+    });
+
+    const result = await runVisualVerify({ project: projectRoot, name: "flutter" });
+    assert(result.status === "pass", `expected pixel pass, got ${result.status}`);
+    assert(result.statuses.pixel === "pass", `expected pixel pass, got ${result.statuses.pixel}`);
+    assert(result.statuses.style === "n/a", `expected style n/a for canvas platform, got ${result.statuses.style}`);
+    assert(result.matches.length === 0, `expected no DOM matches, got ${result.matches.length}`);
+    assert(result.checks.items.length === 0, `expected no style checks without DOM, got ${result.checks.items.length}`);
+    assert(result.source.platform === "flutter", `expected source.platform flutter, got ${result.source.platform}`);
+    assert(exitCodeForResult(result) === 0, "expected exit 0");
   });
 }
 

@@ -47,9 +47,17 @@ export async function runVisualVerify(args = {}) {
   const implementationRate = roundRate(confidence * 100);
   const regions = collectRegions(run.screen, diff, run.thresholds);
   const pixelStatus = decideStatus({ confidence, regions, thresholds: run.thresholds });
-  const { matches } = matchBridgeToDom({ screen: run.screen, domSnapshot: capture.domSnapshot });
-  const checks = collectStyleChecks({ bridge: run.bridge, screen: run.screen, matches, domSnapshot: capture.domSnapshot });
-  const styleStatus = statusFromChecks(checks);
+  // DOM-based matching and style checks need a DOM snapshot. Canvas platforms (Flutter Web) have
+  // none, so we skip them and let the pixel gate stand alone — style is reported as "n/a", never as
+  // a silent pass. The final verdict (status = pixelStatus) is unchanged.
+  const hasDom = capture.domSnapshot != null;
+  const { matches } = hasDom
+    ? matchBridgeToDom({ screen: run.screen, domSnapshot: capture.domSnapshot })
+    : { matches: [] };
+  const checks = hasDom
+    ? collectStyleChecks({ bridge: run.bridge, screen: run.screen, matches, domSnapshot: capture.domSnapshot })
+    : { gating: false, applicable: false, summary: { total: 0, pass: 0, warn: 0, fail: 0 }, items: [] };
+  const styleStatus = hasDom ? statusFromChecks(checks) : "n/a";
   const status = pixelStatus;
 
   const result = {

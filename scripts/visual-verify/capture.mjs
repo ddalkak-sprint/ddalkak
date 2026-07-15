@@ -8,11 +8,18 @@ export class VisualVerifyCaptureError extends Error {
   }
 }
 
+// Playwright renders web today. Flutter Web also renders in a browser, so a flutter target reuses
+// this same screenshot path — its runtime (e.g. `fvm flutter run -d web-server`) is launched
+// outside verify and passed in as a URL, exactly like the web dev server. Flutter paints to a
+// canvas, so there is no meaningful DOM to snapshot; style checks degrade to pixel-only (index.mjs).
+const PLAYWRIGHT_PLATFORMS = new Set(["web", "flutter"]);
+const CANVAS_PLATFORMS = new Set(["flutter"]);
+
 export async function captureRender({ url, selector, viewport, timeoutMs, outputPath, target }) {
   const platform = target?.platform ?? "web";
-  if (platform !== "web") {
+  if (!PLAYWRIGHT_PLATFORMS.has(platform)) {
     throw new VisualVerifyCaptureError(
-      `verify target '${target?.id ?? platform}' uses platform '${platform}', but only the web Playwright provider is implemented. Add a provider for '${target?.screenshotProvider ?? platform}' or run a web target.`
+      `verify target '${target?.id ?? platform}' uses platform '${platform}', but only the web and flutter (Playwright) providers are implemented. Add a provider for '${target?.screenshotProvider ?? platform}' or run a web/flutter target.`
     );
   }
   if (!url) {
@@ -50,7 +57,7 @@ export async function captureRender({ url, selector, viewport, timeoutMs, output
     await page.waitForLoadState("networkidle", { timeout: Math.min(timeoutMs, 10000) }).catch(() => {});
     await page.evaluate(() => document.fonts?.ready).catch(() => {});
 
-    let domSnapshot;
+    let domSnapshot = null;
     try {
       await page.screenshot({
         path: outputPath,
@@ -58,7 +65,11 @@ export async function captureRender({ url, selector, viewport, timeoutMs, output
         caret: "hide",
         scale: "css"
       });
-      domSnapshot = await collectDomSnapshot(page);
+      // Canvas-rendered platforms (Flutter Web) expose no meaningful DOM — skip the snapshot so the
+      // engine falls back to pixel-only verification instead of matching against an empty DOM.
+      if (!CANVAS_PLATFORMS.has(platform)) {
+        domSnapshot = await collectDomSnapshot(page);
+      }
     } catch (error) {
       throw new VisualVerifyCaptureError(`screenshot 캡처 실패: ${error.message}`);
     }
