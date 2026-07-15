@@ -181,6 +181,7 @@ Flutter는 웹이 아니다 — `className`·CSS·Tailwind·DOM·JSX가 없다. 
 - **텍스트 이스케이프**: Dart 문자열 리터럴의 `$`·`${...}`는 `\$`로 이스케이프한다(§8 "템플릿 특수문자"의 Flutter판).
 - **타입/정적 게이트(§9)**: `tsc`/`vue-tsc` 대신 **`fvm flutter analyze`**(fvm 없으면 `flutter analyze`)가 필수 게이트다. Tailwind glob 규칙은 해당 없음.
 - **verify 진입점(필수)**: verify가 로그인·권한·라우팅을 우회해 대상 화면에 바로 도달하도록 code가 검수용 진입점을 함께 낸다 — deep link `ddalkak://preview?screen=<name>` 또는 프리뷰 route/위젯(`?screen=<name>`으로 화면 선택). 없으면 verify는 pass/fail이 아니라 blocked다(`docs/platform-verify.md`).
+  - **프리뷰는 대상 화면만 얹는 최소 root여야 한다.** 앱의 실제 `main()` 전역·네이티브 초기화(캡처 플랫폼이 지원하지 않는 플러그인 등)를 태우지 않는다 — 그래야 그 화면이 순수 UI면 캡처 런타임(예: Flutter Web)에서 컴파일·렌더된다. 대상 화면 자체가 미지원 네이티브 위젯을 쓰면 그 플랫폼 verify는 blocked다.
 - **verify 런타임(§9 dev 렌더의 Flutter판)**: 웹 dev 서버 대신 Flutter Web을 `fvm flutter run -d web-server`로 띄워 그 URL을 verify에 넘긴다. verify는 canvas라 DOM 없이 픽셀로만 판정한다(style은 `n/a`).
 
 ## 9. 빌드 검증 & 생성 후 보고
