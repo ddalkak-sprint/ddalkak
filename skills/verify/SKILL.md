@@ -41,6 +41,8 @@ npm run visual:verify -- \
   --url http://localhost:5173
 ```
 
+`bridge.verify.targets[]`媛 ?덉쑝硫?`--target <id>`濡?寃利?runtime???좏깮?????덈떎. `web` target??Playwright provider瑜??ъ슜?섍퀬, Flutter/Android/iOS/React Native target??provider媛 ?꾩튂?????뚭퉴吏 blocked execution error濡?以묐떒?⑸땲?? 앱 target은 code 단계에서 deep link나 preview route 같은 검수용 진입점을 함께 만들어야 합니다.
+
 sandbox에서는:
 ```bash
 npm run visual:verify -- --project sandbox --name login-page --url http://localhost:5173

@@ -32,7 +32,8 @@ export async function runVisualVerify(args = {}) {
     selector: run.selector,
     viewport: run.viewport,
     timeoutMs: run.timeoutMs,
-    outputPath: actualArtifact
+    outputPath: actualArtifact,
+    target: run.target
   });
   await assertExactImageSize(actualArtifact, run.viewport, "actual");
 
@@ -70,6 +71,7 @@ export async function runVisualVerify(args = {}) {
       mismatchRatio: roundMetric(diff.mismatchRatio)
     },
     viewport: run.viewport,
+    target: run.target,
     artifacts: {
       baseline: toProjectRelative(run.projectRoot, baselineArtifact),
       actual: toProjectRelative(run.projectRoot, actualArtifact),
@@ -81,7 +83,10 @@ export async function runVisualVerify(args = {}) {
       bridge: toProjectRelative(run.projectRoot, run.bridgePath),
       baseline: toProjectRelative(run.projectRoot, run.baseline.path),
       url: run.url,
-      selector: run.selector
+      selector: run.selector,
+      target: run.target?.id,
+      platform: run.target?.platform,
+      screenshotProvider: run.target?.screenshotProvider
     },
     regions,
     matches: matches.map(stripInternalMatchFields),

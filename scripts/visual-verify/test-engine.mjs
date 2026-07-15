@@ -10,6 +10,7 @@ const tests = [
   ["pixel fail returns exit 1", testPixelFail],
   ["style fail is advisory and keeps pixel pass", testStyleAdvisory],
   ["content+geometry match works without data-dk", testContentGeometryMatch],
+  ["non-web target is blocked until provider exists", testNonWebTargetBlocked],
   ["non-body selector returns execution error", testSelectorError],
   ["missing baseline returns config error", testMissingBaseline]
 ];
@@ -113,6 +114,33 @@ async function testSelectorError() {
   });
 }
 
+async function testNonWebTargetBlocked() {
+  await withProject("vv-ios-", async (projectRoot) => {
+    const url = dataUrl(textPage({ color: "rgb(255, 0, 0)" }));
+    await writeBaseline({ projectRoot, url, viewport: { width: 120, height: 40 } });
+    writeBridge({
+      projectRoot,
+      name: "ios",
+      node: textNode({ fill: "#ff0000" }),
+      verify: {
+        defaultTarget: "ios-preview",
+        targets: [{
+          id: "ios-preview",
+          platform: "ios-native",
+          screenshotProvider: "simctl",
+          entry: { type: "deepLink", url: "ddalkak://preview?screen=ios" },
+          viewport: { w: 120, h: 40 }
+        }]
+      }
+    });
+
+    await assertRejects(
+      () => runVisualVerify({ project: projectRoot, name: "ios" }),
+      (error) => error.name === "VisualVerifyCaptureError" && error.message.includes("only the web Playwright provider is implemented")
+    );
+  });
+}
+
 // data-dk 앵커 없이 텍스트 내용과 기하만으로 노드↔DOM이 매칭되는지 확인한다.
 async function testContentGeometryMatch() {
   await withProject("vv-match-", async (projectRoot) => {
@@ -184,7 +212,7 @@ async function writeBaseline({ projectRoot, url, viewport }) {
   }
 }
 
-function writeBridge({ projectRoot, name, frame = { w: 120, h: 40 }, node, skipAssetFile = false }) {
+function writeBridge({ projectRoot, name, frame = { w: 120, h: 40 }, node, skipAssetFile = false, verify }) {
   mkdirSync(join(projectRoot, ".ddalkak", "bridge"), { recursive: true });
   if (!skipAssetFile) mkdirSync(join(projectRoot, ".ddalkak", "assets"), { recursive: true });
   const bridge = {
@@ -211,7 +239,8 @@ function writeBridge({ projectRoot, name, frame = { w: 120, h: 40 }, node, skipA
         id: "baseline",
         export: ".ddalkak/assets/baseline.png"
       }
-    ]
+    ],
+    verify
   };
   writeFileSync(join(projectRoot, ".ddalkak", "bridge", `${name}.bridge.json`), `${JSON.stringify(bridge, null, 2)}\n`);
 }

@@ -8,7 +8,13 @@ export class VisualVerifyCaptureError extends Error {
   }
 }
 
-export async function captureRender({ url, selector, viewport, timeoutMs, outputPath }) {
+export async function captureRender({ url, selector, viewport, timeoutMs, outputPath, target }) {
+  const platform = target?.platform ?? "web";
+  if (platform !== "web") {
+    throw new VisualVerifyCaptureError(
+      `verify target '${target?.id ?? platform}' uses platform '${platform}', but only the web Playwright provider is implemented. Add a provider for '${target?.screenshotProvider ?? platform}' or run a web target.`
+    );
+  }
   if (!url) {
     throw new VisualVerifyCaptureError("--url이 필요합니다. sandbox는 기본값 http://localhost:5173를 사용합니다.");
   }

@@ -73,9 +73,99 @@
           "format": { "enum": ["svg", "png", "jpg", "webp"] }
         }
       }
+    },
+    "verify": {
+      "$ref": "#/$defs/verifyConfig",
+      "description": "Platform-specific verification contract. Web uses Playwright today; app targets define the preview entrypoint that platform providers must open before screenshot capture."
     }
   },
   "$defs": {
+    "verifyConfig": {
+      "type": "object",
+      "properties": {
+        "targets": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/verifyTarget" }
+        },
+        "defaultTarget": {
+          "type": "string",
+          "description": "targets[].id to use when verify CLI does not receive --target."
+        }
+      }
+    },
+    "verifyTarget": {
+      "type": "object",
+      "required": ["id", "platform"],
+      "properties": {
+        "id": { "type": "string" },
+        "platform": {
+          "enum": ["web", "flutter", "android", "android-native", "ios", "ios-native", "react-native"],
+          "description": "Runtime used to render and capture the generated screen."
+        },
+        "device": { "type": "string" },
+        "screen": {
+          "type": "string",
+          "description": "Optional bridge screen name or breakpoint this target verifies."
+        },
+        "viewport": { "$ref": "#/$defs/viewport" },
+        "density": { "type": "number", "exclusiveMinimum": 0 },
+        "safeArea": { "$ref": "#/$defs/safeArea" },
+        "entry": { "$ref": "#/$defs/verifyEntry" },
+        "screenshotProvider": {
+          "enum": ["playwright", "flutter", "adb", "simctl", "detox", "maestro", "manual"],
+          "description": "Provider responsible for opening the runtime and returning the actual screenshot."
+        },
+        "ignoreRegions": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              { "enum": ["statusBar", "navigationBar", "homeIndicator", "keyboard"] },
+              {
+                "type": "object",
+                "required": ["x", "y", "w", "h"],
+                "properties": {
+                  "x": { "type": "number" },
+                  "y": { "type": "number" },
+                  "w": { "type": "number" },
+                  "h": { "type": "number" },
+                  "reason": { "type": "string" }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "viewport": {
+      "type": "object",
+      "required": ["w", "h"],
+      "properties": {
+        "w": { "type": "number" },
+        "h": { "type": "number" }
+      }
+    },
+    "safeArea": {
+      "type": "object",
+      "properties": {
+        "top": { "type": "number" },
+        "right": { "type": "number" },
+        "bottom": { "type": "number" },
+        "left": { "type": "number" }
+      }
+    },
+    "verifyEntry": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": { "enum": ["url", "deepLink", "route", "command", "manual"] },
+        "url": { "type": "string" },
+        "route": { "type": "string" },
+        "command": { "type": "string" },
+        "scheme": { "type": "string" },
+        "activity": { "type": "string" },
+        "bundleId": { "type": "string" }
+      }
+    },
     "node": {
       "type": "object",
       "required": ["type"],
