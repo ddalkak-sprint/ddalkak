@@ -66,6 +66,8 @@ bridge는 CSS breakpoint가 아니라 웹·React Native·iOS·Android가 함께 
 1. **화면 환경**: `screen.frame`에 관측 크기를, 명시된 경우에만 `environment`에 orientation/platform/density/
    colorScheme/safeArea를 기록한다. Figma에 없는 safe area나 density를 관행으로 지어내지 않는다.
 2. **화면 변형**: 같은 논리 화면을 `adaptive.group`으로 묶고 원본 변형 이름을 `adaptive.variant`에 보존한다.
+   - 변형은 반응형 크기(mobile/tablet/…)뿐 아니라 **상태/인터랙션 변형**(default/typing/error/… — 별도 URL로 받은
+     같은 화면의 상태 프레임 포함)일 수 있다. 상태 변형이면 `adaptive.variant`에 상태 이름을 보존한다.
    - 프레임 이름 또는 실제 별도 프레임에서 직접 확인했으면 `source: "observed"`.
    - 화면 크기 사이의 범위나 조건을 추론했으면 `source: "inferred"` + `confidence` 필수.
    - 기존 `breakpoint`/`variantGroup`은 v2.0 소비자 호환을 위해 함께 둘 수 있다.
