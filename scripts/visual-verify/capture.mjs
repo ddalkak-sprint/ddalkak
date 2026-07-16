@@ -56,6 +56,14 @@ export async function captureRender({ url, selector, viewport, timeoutMs, output
     });
     await page.waitForLoadState("networkidle", { timeout: Math.min(timeoutMs, 10000) }).catch(() => {});
     await page.evaluate(() => document.fonts?.ready).catch(() => {});
+    // Flutter Web boots asynchronously (engine JS + CanvasKit) and paints its first frame well
+    // after network idle — without waiting, the screenshot is a blank page. Wait for the Flutter
+    // view host element, then give the raster thread a beat to paint. Skipped for data: URLs so
+    // the engine test's plain-HTML stand-in doesn't stall on a selector that never appears.
+    if (CANVAS_PLATFORMS.has(platform) && !url.startsWith("data:")) {
+      await page.waitForSelector("flutter-view, flt-glass-pane", { timeout: timeoutMs }).catch(() => {});
+      await page.waitForTimeout(2000);
+    }
 
     let domSnapshot = null;
     try {
