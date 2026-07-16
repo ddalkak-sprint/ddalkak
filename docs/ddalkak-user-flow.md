@@ -21,8 +21,8 @@ flowchart LR
 
 ## 사용자가 보는 흐름
 
-1. 사용자는 Figma 화면 또는 섹션 URL을 준비합니다.
-2. Ddalkak에 URL을 입력합니다.
+1. 사용자는 Figma 화면 또는 섹션 URL을 준비합니다. 같은 화면의 상태 변형(기본/에러/로딩 등)이 별도 프레임으로 그려져 있다면 그 URL들도 함께 준비합니다.
+2. Ddalkak에 URL을 입력합니다. 여러 개를 주면 한 화면의 상태들로 묶어 하나의 bridge로 병합합니다.
 3. Ddalkak은 Figma에서 레이아웃, 텍스트, 스타일, 에셋, 반응형 단서 등을 가져옵니다.
 4. 가져온 디자인 정보를 플랫폼 중립적인 Bridge JSON으로 변환합니다.
 5. Bridge JSON을 기준으로 구현 계획을 만듭니다.
@@ -35,8 +35,8 @@ flowchart LR
 | 단계 | 이름 | 입력 | 출력 | 역할 |
 |---|---|---|---|---|
 | 0 | design-md | 프로젝트 코드베이스 | `design.md` | 사용할 기술 스택, 디자인 규칙, 구현 기준을 정리합니다. |
-| 1 | bridge | Figma URL | `.ddalkak/bridge/<name>.bridge.json` | Figma 디자인을 코드 생성 가능한 중간 JSON으로 변환합니다. |
-| 2 | plan | Bridge JSON, `design.md` | `.ddalkak/plan/<name>.plan.md` | 어떤 컴포넌트와 구조로 만들지 구현 계획을 세웁니다. |
+| 1 | bridge | Figma URL 1개 이상 | `.ddalkak/bridge/<name>.bridge.json` | Figma 디자인을 코드 생성 가능한 중간 JSON으로 변환합니다. |
+| 2 | plan | Bridge JSON, `design.md` | `.ddalkak/plan/<name>.plan.md` | 어떤 컴포넌트와 구조로 만들지, 인터랙션·상태 전환과 기존 코드 통합 범위까지 구현 계획을 세웁니다. |
 | 3 | code | Plan, `design.md` | 프로젝트 코드 | 실제 화면 코드를 생성합니다. |
 | 4 | verify | 코드, Bridge JSON | `.ddalkak/reports/<name>.verify.md` | 생성 결과와 디자인 기준의 차이를 확인합니다. |
 | 5 | finalize | Verify 결과 | 최종 요약 | 완료 상태와 남은 이슈를 정리합니다. |

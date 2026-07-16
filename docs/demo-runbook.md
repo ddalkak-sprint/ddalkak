@@ -52,7 +52,7 @@ Figma URL 하나를 넣으면 여섯 단계가 이어 돌며 실제 렌더되는
 
 둘째, LLM 없는 정적 검증입니다. verify는 LLM 판단이 아니라 Playwright 캡처 + pixelmatch 픽셀 diff + bridge bbox 영역별 mismatch로 판정하고, DOM computed style은 참고 증거로만 리포트합니다.
 
-셋째, 각 단계 앞에 결정론적 게이트가 있습니다. validate-bridge(ajv 스키마 + 시맨틱 4종) → validate-plan(에러 9종 + 경고 10종) → validate-code + tsc → visual-verify로 이어지는 4단 게이트가 다음 단계로 넘기기 전에 산출물을 거릅니다.
+셋째, 각 단계 앞에 결정론적 게이트가 있습니다. validate-bridge(ajv 스키마 + 시맨틱 4종) → validate-plan(에러 9종 + 경고 12종) → validate-code + tsc → visual-verify로 이어지는 4단 게이트가 다음 단계로 넘기기 전에 산출물을 거릅니다.
 
 넷째, 생성에서 멈추지 않고 수렴합니다. verify가 불일치를 짚으면 code를 fix 모드로 다시 돌려 짚어진 곳만 고치고 재검증하며, 통과하거나 개선 없는 반복이 2회 이어질 때까지 오케스트레이터가 이 루프를 조율합니다.
 
@@ -78,7 +78,7 @@ Figma URL 하나를 넣으면 여섯 단계가 이어 돌며 실제 렌더되는
 전체를 `--auto`로 한 번에 돌리는 그림이 제일 세지만, 그건 위 준비가 완벽할 때만 안전합니다. 발표에서는 단계별 단독 실행으로 각 산출물을 보여주는 편이 통제하기 쉽습니다.
 
 1. `/ddalkak:bridge`를 **캐시 재생(`--source cache`)** 으로 돌려 Figma 응답에서 무손실 JSON IR이 나오는 장면을 보여줍니다. 이때 반드시 완결 판정을 받는 캡처(`untitled-1-858`)를 씁니다. README 표에 적힌 `main` 캡처는 완결성 게이트에서 거부됩니다(3장 참고).
-2. `/ddalkak:plan`으로 bridge JSON이 파일 계획·토큰 매핑·구현 순서로 풀리는 걸 보여줍니다. 예시 브릿지는 validate-plan을 경고 0건으로 통과하므로 안전합니다.
+2. `/ddalkak:plan`으로 bridge JSON이 파일 계획·토큰 매핑·구현 순서로 풀리는 걸 보여줍니다. 예시 plan은 구조 검증을 통과하지만, plan-rules §11/§12가 추가된 뒤로는 인터랙션·브라운필드 섹션 완결성 경고 2건이 뜹니다. 경고가 다음 단계를 막지는 않으므로, 오히려 게이트가 빠진 계획을 짚어주는 장면으로 활용할 수 있습니다.
 3. `/ddalkak:code`로 코드가 나오고 `npm run dev`에 렌더되는 걸 보여줍니다.
 4. `/ddalkak:verify`로 픽셀 diff가 의도적 불일치 2건(TextField 높이 44 대 48, 회원가입 링크 색)을 잡아내는 장면을 보여줍니다. 이게 "LLM 없이 눈으로 대조한다"의 하이라이트입니다.
 5. fix 모드 수렴 루프를 보여줄지는 아키텍처 결정(0장)에 달렸습니다. data-dk 방식(현재 브랜치)에서는 sandbox 앵커가 0개라 자동 수정이 0건으로 끝나므로, verify-observe로 데모하거나 이 시연은 생략합니다.

@@ -1,6 +1,6 @@
 # Platform Verify
 
-Ddalkak의 검증 단계는 Figma 기준 이미지와 실제 런타임 화면을 비교합니다. Web은 Playwright로 바로 캡처할 수 있지만, Flutter, Android Native, iOS Native, React Native는 각 플랫폼에서 화면을 띄우고 스크린샷을 가져오는 provider가 필요합니다.
+Ddalkak의 검증 단계는 Figma 기준 이미지와 실제 런타임 화면을 비교합니다. Web과 Flutter(웹 빌드)는 Playwright로 바로 캡처할 수 있지만, Android Native, iOS Native, React Native는 각 플랫폼에서 화면을 띄우고 스크린샷을 가져오는 provider가 필요합니다.
 
 핵심 구조는 다음과 같습니다.
 
@@ -59,14 +59,14 @@ Bridge JSON은 `verify.targets`로 검증 대상 런타임을 표현합니다.
 }
 ```
 
-현재 구현된 provider는 `web` + `playwright`입니다. Flutter, Android, iOS, React Native target은 schema로 표현할 수 있고 visual verify가 target을 읽지만, 실제 provider가 추가되기 전에는 실행 오류로 차단됩니다. 이 상태를 성공처럼 처리하지 않는 것이 원칙입니다.
+현재 구현된 provider는 `web`과 `flutter`이고 둘 다 Playwright로 캡처합니다. Flutter는 웹 빌드(canvas 렌더링)를 열어 첫 프레임 렌더를 기다린 뒤 찍는데, DOM 스냅샷이 없으므로 DOM match와 style check를 생략하고 픽셀 비교만으로 판정합니다. Android, iOS, React Native target은 schema로 표현할 수 있고 visual verify가 target을 읽지만, 실제 provider가 추가되기 전에는 실행 오류로 차단됩니다. 이 상태를 성공처럼 처리하지 않는 것이 원칙입니다.
 
 ## Platform별 책임
 
 | 플랫폼 | Provider | 해야 할 일 |
 |---|---|---|
 | Web | `playwright` | URL을 열고 `body`를 캡처합니다. |
-| Flutter | `flutter` | preview app 또는 integration test를 실행하고 스크린샷을 저장합니다. |
+| Flutter | `flutter` | 프리뷰 진입점을 웹 빌드해 정적 서빙하고, Playwright가 flutter-view 렌더를 기다려 캡처합니다(구현됨). debug 실행은 부팅이 느려 release 빌드를 권장합니다. |
 | Android Native | `adb` | emulator에 앱을 설치하고 deep link/activity를 열어 `screencap`을 저장합니다. |
 | iOS Native | `simctl` | simulator에서 scheme을 실행하고 deep link를 열어 screenshot을 저장합니다. |
 | React Native | `detox` 또는 `maestro` | 앱을 실행하고 test flow로 화면에 진입해 스크린샷을 저장합니다. |

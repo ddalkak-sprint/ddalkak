@@ -24,7 +24,7 @@ flowchart LR
 | 단계 | 명령 | 입력 | 출력 | 설명 |
 |---|---|---|---|---|
 | 0 | `/ddalkak:design-md` | 프로젝트 코드베이스 | `design.md` | 기술 스택과 구현 기준을 정리합니다. |
-| 1 | `/ddalkak:bridge` | Figma URL | `.ddalkak/bridge/<name>.bridge.json` | Figma 디자인을 플랫폼 중립 Bridge JSON으로 변환합니다. |
+| 1 | `/ddalkak:bridge` | Figma URL 1개 이상 | `.ddalkak/bridge/<name>.bridge.json` | Figma 디자인을 플랫폼 중립 Bridge JSON으로 변환합니다. 같은 화면의 상태 변형 프레임이면 여러 URL을 하나의 bridge로 병합합니다. |
 | 2 | `/ddalkak:plan` | Bridge JSON, `design.md` | `.ddalkak/plan/<name>.plan.md` | 구현 계획을 만듭니다. |
 | 3 | `/ddalkak:code` | Plan, `design.md` | 프로젝트 코드 | 실제 코드를 생성합니다. |
 | 4 | `/ddalkak:verify` | 코드, Bridge JSON | `.ddalkak/reports/<name>.verify.md` | 생성 화면을 디자인 기준과 비교합니다. |
@@ -32,7 +32,7 @@ flowchart LR
 
 자세한 사용자 흐름은 [docs/ddalkak-user-flow.md](docs/ddalkak-user-flow.md)를 참고합니다.
 
-앱 검증까지 확장하는 방식은 [docs/platform-verify.md](docs/platform-verify.md)를 참고합니다. 현재 구현된 캡처 provider는 Web Playwright이며, Flutter, Android Native, iOS Native, React Native는 `verify.targets` 계약을 먼저 정의하고 provider를 추가하는 구조입니다.
+앱 검증까지 확장하는 방식은 [docs/platform-verify.md](docs/platform-verify.md)를 참고합니다. 현재 구현된 캡처 provider는 Web과 Flutter(웹 빌드)이며 둘 다 Playwright로 캡처합니다. Flutter는 canvas 렌더링이라 DOM 스냅샷 없이 픽셀 비교만으로 판정합니다. Android Native, iOS Native, React Native는 `verify.targets` 계약을 먼저 정의하고 provider를 추가하는 구조입니다.
 
 ## Bridge가 하는 일
 
@@ -53,7 +53,7 @@ Bridge JSON에는 다음 정보가 들어갑니다.
 
 ## 앱 검증 방향
 
-Web은 브라우저에서 바로 스크린샷을 찍을 수 있지만, Flutter, Android Native, iOS Native, React Native는 각 플랫폼의 실행 환경이 필요합니다. Ddalkak은 이를 `verify.targets`로 표현합니다.
+Web과 Flutter(웹 빌드)는 브라우저에서 바로 스크린샷을 찍을 수 있지만, Android Native, iOS Native, React Native는 각 플랫폼의 실행 환경이 필요합니다. Ddalkak은 이를 `verify.targets`로 표현합니다.
 
 ```json
 {
