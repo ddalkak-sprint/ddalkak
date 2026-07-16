@@ -23,6 +23,8 @@
 //   - 브릿지 컴포넌트(mappedCodeComponent/componentName/suggestedComponent)가 plan에 언급 없음
 //   - 페이지 등록(진입점 "수정" 행) 흔적 없음 (plan-rules §1)
 //   - 브릿지 미해결 불일치가 있는데 plan에 ⚠ 섹션이 없음
+//   - 인터랙티브 요소(semanticRole)/상태 variant가 있는데 '인터랙션 & 상태 전환' 섹션 없음 (plan-rules §11)
+//   - 파일 계획에 '수정'(기존 파일) 행이 있는데 '기존 소스 통합(브라운필드)' 섹션 없음 (plan-rules §12)
 
 import { existsSync, readFileSync } from "node:fs";
 import { basename } from "node:path";
@@ -128,6 +130,13 @@ if (sections["파일 계획"] !== null) {
   }
 }
 
+// ── 3-1. 브라운필드 통합 섹션 (plan-rules §12) ───────────
+// '수정'(기존 파일 변경) 행이 있으면 기존 코드와 부딪히므로, 통합/회귀 경계 섹션을 요구한다.
+if (fileRows.some((c) => /수정/.test(c[1] ?? "")) &&
+    !/브라운필드|기존 소스|기존 코드|회귀 경계|대체\/수정|공존/.test(planText)) {
+  warnings.push("파일 계획에 '수정'(기존 파일 변경) 행이 있으나 '기존 소스 통합(브라운필드)' 섹션이 없음 — 대체/수정 대상의 회귀 경계(동작·위젯 Key·테스트)가 누락될 수 있다 (plan-rules §12)");
+}
+
 // ── 4. 디자인 토큰 매핑 표 ───────────────────────────────
 const tokenSection = sections["디자인 토큰 매핑"];
 const tokenRows = tableRows(tokenSection);
@@ -162,6 +171,7 @@ if (bridge) {
   const illustrations = new Set();       // 자식 bbox가 겹치는 mode:"none" 서브트리 이름(절대배치)
   const components = new Set();           // 컴포넌트 이름 후보
   const pageNames = new Set();            // screen → PascalCase 페이지명 (variantGroup 중복 제거)
+  const semanticRoles = new Set();        // 인터랙션 섹션 완결성용 (plan-rules §11)
 
   const isColorLiteral = (v) => typeof v === "string" && /^(#[0-9a-fA-F]{3,8}|rgba?\()/.test(v.trim());
   function collectColors(value) {
@@ -227,6 +237,7 @@ if (bridge) {
       if (node.mappedCodeComponent) components.add(basename(node.mappedCodeComponent));
       if (node.componentName) components.add(node.componentName.split("/")[0]);
       if (node.suggestedComponent) components.add(node.suggestedComponent);
+      if (node.semanticRole) semanticRoles.add(node.semanticRole);
       if (node.children) walk(node.children);
     }
   }
@@ -314,6 +325,23 @@ if (bridge) {
     if (!planText.includes(page)) {
       errors.push(`브릿지 screen에 대응하는 페이지 '${page}'가 plan 어디에도 없음 (plan-rules §1 — 화면 커버리지 구멍)`);
     }
+  }
+
+  // 5-5. 인터랙션 & 상태 전환 섹션 완결성 (plan-rules §11)
+  const INTERACTIVE_ROLES = new Set([
+    "button", "cta-button", "icon-button", "input", "search-field", "tab",
+    "nav-item", "nav-menu", "menu-item", "link", "toast", "breadcrumb-item",
+  ]);
+  const hasInteractive = [...semanticRoles].some((r) => INTERACTIVE_ROLES.has(r));
+  const variantCounts = new Map(); // adaptive.group → variant 수
+  for (const s of bridge.screens ?? []) {
+    const g = s.adaptive?.group;
+    if (g) variantCounts.set(g, (variantCounts.get(g) ?? 0) + 1);
+  }
+  const hasStates = [...variantCounts.values()].some((n) => n >= 2);
+  if ((hasInteractive || hasStates) &&
+      !/인터랙션|상태\s*전환|상태\s*배선/.test(planText)) {
+    warnings.push("인터랙티브 요소(button/input/tab 등) 또는 상태 variant가 있으나 plan에 '인터랙션 & 상태 전환' 섹션이 없음 — 트리거→동작·상태 전환이 code에서 즉흥 배선되고 미상 트리거를 사용자에게 못 묻는다 (plan-rules §11)");
   }
 }
 
