@@ -8,6 +8,8 @@
   },
   "scripts": {
     "validate:bridge": "node scripts/validate-bridge.mjs",
+    "bridge:cache": "node scripts/bridge-from-cache.mjs",
+    "test:bridge:cache": "node scripts/test-bridge-cache.mjs",
     "validate:plan": "node scripts/validate-plan.mjs",
     "verify:observe": "node scripts/verify-observe/cli.mjs",
     "visual:verify": "node scripts/visual-verify/cli.mjs",
@@ -17,6 +19,7 @@
     "test:visual:engine": "node scripts/visual-verify/test-engine.mjs"
   },
   "dependencies": {
+    "ajv": "8.20.0",
     "pixelmatch": "7.2.0",
     "playwright": "1.61.1",
     "pngjs": "7.0.0",

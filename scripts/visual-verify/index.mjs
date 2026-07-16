@@ -32,7 +32,8 @@ export async function runVisualVerify(args = {}) {
     selector: run.selector,
     viewport: run.viewport,
     timeoutMs: run.timeoutMs,
-    outputPath: actualArtifact
+    outputPath: actualArtifact,
+    target: run.target
   });
   await assertExactImageSize(actualArtifact, run.viewport, "actual");
 
@@ -46,9 +47,17 @@ export async function runVisualVerify(args = {}) {
   const implementationRate = roundRate(confidence * 100);
   const regions = collectRegions(run.screen, diff, run.thresholds);
   const pixelStatus = decideStatus({ confidence, regions, thresholds: run.thresholds });
-  const { matches } = matchBridgeToDom({ screen: run.screen, domSnapshot: capture.domSnapshot });
-  const checks = collectStyleChecks({ bridge: run.bridge, screen: run.screen, matches, domSnapshot: capture.domSnapshot });
-  const styleStatus = statusFromChecks(checks);
+  // DOM-based matching and style checks need a DOM snapshot. Canvas platforms (Flutter Web) have
+  // none, so we skip them and let the pixel gate stand alone — style is reported as "n/a", never as
+  // a silent pass. The final verdict (status = pixelStatus) is unchanged.
+  const hasDom = capture.domSnapshot != null;
+  const { matches } = hasDom
+    ? matchBridgeToDom({ screen: run.screen, domSnapshot: capture.domSnapshot })
+    : { matches: [] };
+  const checks = hasDom
+    ? collectStyleChecks({ bridge: run.bridge, screen: run.screen, matches, domSnapshot: capture.domSnapshot })
+    : { gating: false, applicable: false, summary: { total: 0, pass: 0, warn: 0, fail: 0 }, items: [] };
+  const styleStatus = hasDom ? statusFromChecks(checks) : "n/a";
   const status = pixelStatus;
 
   const result = {
@@ -70,6 +79,7 @@ export async function runVisualVerify(args = {}) {
       mismatchRatio: roundMetric(diff.mismatchRatio)
     },
     viewport: run.viewport,
+    target: run.target,
     artifacts: {
       baseline: toProjectRelative(run.projectRoot, baselineArtifact),
       actual: toProjectRelative(run.projectRoot, actualArtifact),
@@ -81,7 +91,10 @@ export async function runVisualVerify(args = {}) {
       bridge: toProjectRelative(run.projectRoot, run.bridgePath),
       baseline: toProjectRelative(run.projectRoot, run.baseline.path),
       url: run.url,
-      selector: run.selector
+      selector: run.selector,
+      target: run.target?.id,
+      platform: run.target?.platform,
+      screenshotProvider: run.target?.screenshotProvider
     },
     regions,
     matches: matches.map(stripInternalMatchFields),

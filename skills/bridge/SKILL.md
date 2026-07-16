@@ -1,18 +1,24 @@
 ---
 name: bridge
-description: Figma MCP를 사용해 Figma 디자인을 무손실 "디자인 브릿지(JSON)"로 산출한다. 상세 스타일·토큰·오토레이아웃·constraints를 전량 캡처하고, 스크린샷과 교차검증해 누락을 잡으며, 스크린샷 비전 분석으로 의미 레이어(semanticRole)까지 얹는다. section/page 두 모드 지원, 결과를 .ddalkak/bridge/에 저장. 사용자가 Figma URL로 디자인을 뽑을 때, 또는 딸깍 파이프라인 1단계에서 사용.
+description: Figma MCP 또는 기록된 MCP 캐시를 사용해 Figma 디자인을 무손실 플랫폼 중립 Bridge IR(JSON)로 산출한다. 스타일·토큰·레이아웃·적응형 화면 조건·constraints·자산·텍스트 동작을 캡처하고 스크린샷과 교차검증한다. 웹, React, React Native, iOS, Android로 이어지는 딸깍 파이프라인 1단계에서 사용.
 ---
 
 # [1] 디자인 브릿지(JSON) 산출  (닉·초록)
 
-Figma 원본을 **무손실로** 정규화해 후속 단계(plan/code)가 쓰기 좋은 단일 JSON으로 만든다.
-토큰을 쓰되 원본값이 항상 복원 가능하고(§4), 스크린샷과 교차검증해 누락을 잡고(§8), 반응형까지 담고(§5),
+Figma 원본을 **무손실 플랫폼 중립 Bridge IR**로 정규화해 후속 단계(plan/code)가 쓰기 좋은 단일 JSON으로 만든다.
+토큰을 쓰되 원본값이 항상 복원 가능하고(§4), 스크린샷과 교차검증해 누락을 잡고(§8), 적응형 동작까지 담고(§5),
 스크린샷 비전 분석으로 **의미 레이어**(semanticRole — hero/cta-button/card-list …)를 얹는다(§11).
 - 스키마 SSOT: `${CLAUDE_PLUGIN_ROOT}/shared/bridge.schema.json` (v2.1)
 - 추출 규칙 SSOT: `${CLAUDE_PLUGIN_ROOT}/shared/figma-extraction-rules.md`
 
 ## 입력
-- Figma URL (필수)
+- Figma URL — **하나 또는 여러 개**(필수). 여러 개를 주면 각각 추출해 한 bridge의 `screens[]`로 병합한다.
+  - 여러 URL이 **같은 화면의 상태/인터랙션 변형**(예: 로그인 빈→입력중→에러→활성)이면 `adaptive.group`으로 묶고,
+    `adaptive.variant`에 상태 이름을 보존하며, 상태 간 동일 노드에 `matchKey`를 붙인다(§5). plan/code가 이 상태
+    묶음을 **하나의 화면(+상태 전환)** 으로 합성할 수 있게 된다.
+  - 서로 다른 화면(예: 온보딩 + 로그인)이면 그룹핑하지 않고 각각 별도 screen으로 둔다.
+  - **경계**: 상태 전환을 일으키는 트리거/로직(입력 검증·서버 응답·네비게이션)은 정적 디자인에 없다 — bridge는
+    상태와 matchKey만 담고, 전환 배선은 plan/code에서 정한다(Figma 프로토타입 reaction이 있으면 근거로 활용).
 - 모드: `section` (프레임/섹션 단위) | `page` (페이지 전체) — 기본 `page`
   (URL의 `node-id` 유무로 자동 판별. 규칙: rules §1)
 - `fidelity`: `lossless`(기본) | `summary` — lossless는 구조 접기 외 축약 금지 (rules §2)
@@ -37,18 +43,34 @@ Figma 원본을 **무손실로** 정규화해 후속 단계(plan/code)가 쓰기
 > `semantic` 패스는 캡처된 스크린샷을 비전 분석하는 것이라 **MCP 호출을 추가로 쓰지 않는다** (§11).
 
 ## 출력
+
+### 캐시 입력 사전검사
+
+`source: cache`에서는 변환 전에 반드시 `node scripts/mcp-cache.mjs check <cacheDir>`를 실행한다.
+섹션 응답이 `codeSummary`인 경우 `get_metadata`의 모든 `metadataLeaf`에 대응하는 개별
+`get_design_context(nodeId)` 상세 응답이 있어야 한다. 하나라도 없으면 bridge, plan, code를 생성하지 않고
+누락된 leaf 이름과 node ID를 보고한다. 자연어 요약이나 스크린샷 추정으로 누락 좌표를 채워 성공 처리하지 않는다.
 - `.ddalkak/bridge/<name>.bridge.json` (스키마 v2.1 준수, `meta.schemaVersion: "2.1"`)
 - **compact 저장**(rules §14 — pretty는 토큰 4배). 사람 검토: `scripts/bridge-format.mjs <file> --pretty`
-- `meta.sourceFingerprint`에 캐시 지문 기록(`scripts/mcp-cache.mjs fingerprint`) — 재실행 시
-  지문이 같으면 **추출 스킵 + 기존 브릿지 재사용** (rules §10, 시간 절약)
+- `meta.sourceFingerprint`와 `meta.extractorFingerprint`를 함께 기록한다. 캐시와 추출기 지문이 모두 같을 때만
+  기존 브릿지를 재사용한다. 스키마·규칙·변환기가 바뀌면 같은 캐시에서도 다시 생성한다(rules §10).
+- `meta.coordinateSpace`와 `meta.completeness`를 기록하고, 부분 실패면 `meta.errors[]`에 실패 패스를 남긴다(rules §15).
 - 저장 전 `scripts/validate-bridge.mjs`로 검증 → 미해결 `@ref`/불일치 있으면 자가 수정 1회 재시도 (rules §9)
   — 검증기는 불변식·bbox↔스크린샷 edge 대조(rules §9-1)까지 수행한다
 
 ## 절차
-1. URL 파싱 → file key / node id 추출, node-id 유무로 section/page 모드 확정.
+1. URL(들) 파싱 → 각 URL의 file key / node id 추출, node-id 유무로 section/page 모드 확정.
+   여러 URL이면 각 URL을 순회하며 2~7을 적용해 추출하고, 결과 screens를 한 bridge로 병합한다.
 2. `figma-extractor`에게 위임 (`source` 전달) → 7개 패스 결과 병합.
    - `live`: MCP 호출하며 원시 응답을 `cacheDir`에 기록. `cache`: `cacheDir`에서 원시 응답 읽어 재생 (rules §10).
-3. 가지치기(rules §2, 무손실 자산화) + 컴포넌트 판별(§3) + 오토레이아웃(§7) + 반응형 그룹핑/constraints(§5) 적용.
+   - cache final 생성은 `npm run bridge:cache -- --cache <cacheDir> --project <project> --name <name>`을 실행한다.
+     노드 컴파일, 자산 로컬 적재, compact 저장, JSON Schema·스크린샷 검증까지 원자적으로 끝낸다.
+   - 병합의 수치·구조·텍스트는 기계 산출물을 그대로 쓴다: `bridge-skeleton.mjs`(metadata → bbox 트리, §8-2)
+     + `design-context-to-bridge.mjs`(코드 응답 → 노드 초안: 스타일·텍스트·에셋·앵커 원형 §8-3).
+     LLM은 두 산출물의 병합(instance 판별, 스켈레톤 bbox 우선)만 담당 — 전사 금지.
+3. 가지치기(rules §2, 무손실 자산화) + 컴포넌트 판별(§3) + 플랫폼 중립 layout/sizing/behavior(§7) 적용.
+   같은 논리 화면 변형은 `adaptive.group`으로 묶고, 확실한 동일 노드에만 `matchKey`를 붙인다(§5).
+   여러 URL로 받은 것이 한 화면의 상태들이면 그 상태 변형도 여기서 같은 방식으로 그룹핑한다.
 4. **비전 의미 레이어(§11)** — 주요 컨테이너에 `semanticRole` 부여, 반복 패턴 인식. MCP 수치는 절대 덮어쓰지 않음.
 5. **구조 추론(§12)** — Figma에 없어도 코드에 필요한 구조 제안: 반복 서브트리 → `suggestedComponent`(+`suggestedProps`),
    흩어진 절대배치 덩어리 → `source: "inferred"` 합성 그룹 + flex 추론. plan/code가 이걸 근거로 컴포넌트화·중첩을 구현.
@@ -58,5 +80,6 @@ Figma 원본을 **무손실로** 정규화해 후속 단계(plan/code)가 쓰기
    `confidence: 0.7`로 남겨 한도가 풀리면 재확인 대상임을 표시한다. 그래도 안 되는 것만 비전
    backfill(`source: "vision"` + `confidence` 태깅, §11-2).
 7. 토큰 매핑: 값이 변수에 대응하면 `@color.primary`처럼 참조, 아니면 raw 리터럴 (§4 무손실 규약).
-8. 검증(§9) → 저장 → 요약 보고 (screens 수, 반응형 그룹, 컴포넌트 판별, 교차검증 결과,
+8. JSON Schema + 적응형 그룹 검증(§9/§15) → 저장 → 요약 보고 (screens 수, adaptive 그룹, completeness,
+   컴포넌트 판별, 교차검증 결과,
    semanticRole/vision 노드 수, suggestedComponent 제안 목록).

@@ -61,6 +61,26 @@ function checkCapture(dir) {
     const hasShot = calls.some((c) => c.scope === `section:${s.slug}` && c.tool === "get_screenshot") ||
       calls.some((c) => c.scope === "page" && c.tool === "get_screenshot");
     if (!hasShot) warnings.push(`섹션 '${s.slug}' 스크린샷 커버 안 됨 (교차검증 §8 불가)`);
+
+    const sectionContext = calls.find((c) => c.scope === `section:${s.slug}` && c.tool === "get_design_context");
+    if (sectionContext?.file && existsSync(join(dir, sectionContext.file))) {
+      const context = JSON.parse(readFileSync(join(dir, sectionContext.file), "utf8"));
+      if (!context.code && context.codeSummary) {
+        const metadataCall = calls.find((c) => c.tool === "get_metadata" && (c.scope === `section:${s.slug}` || c.scope === "page"));
+        if (!metadataCall?.file || !existsSync(join(dir, metadataCall.file))) {
+          errors.push(`섹션 '${s.slug}'가 codeSummary 응답인데 leaf 커버리지를 검사할 metadata가 없음`);
+          continue;
+        }
+        const leaves = metadataLeaves(readFileSync(join(dir, metadataCall.file), "utf8"));
+        const detailed = new Set(calls.filter((c) => c.tool === "get_design_context" && c.args?.nodeId && c.file && existsSync(join(dir, c.file)))
+          .filter((c) => JSON.parse(readFileSync(join(dir, c.file), "utf8")).code)
+          .map((c) => c.args.nodeId));
+        const missing = leaves.filter((leaf) => !detailed.has(leaf.id));
+        if (missing.length) {
+          errors.push(`섹션 '${s.slug}' codeSummary leaf detail 누락 ${missing.length}개: ${missing.map((leaf) => `${leaf.name}(${leaf.id})`).join(", ")}`);
+        }
+      }
+    }
   }
 
   if (errors.length) {
@@ -70,6 +90,16 @@ function checkCapture(dir) {
   }
   if (warnings.length) console.warn("⚠️  경고:\n - " + warnings.join("\n - "));
   console.log(`✅ 캡처 완결 (${dir}): 콜 ${calls.length}, 도구 [${[...tools].join(", ")}]`);
+}
+
+function metadataLeaves(xml) {
+  const leaves = [];
+  for (const match of xml.matchAll(/<instance\b([^>]*?)\/>/g)) {
+    const attrs = {};
+    for (const attr of match[1].matchAll(/([\w-]+)="([^"]*)"/g)) attrs[attr[1]] = attr[2];
+    if (attrs.id) leaves.push({ id: attrs.id, name: attrs.name ?? "instance" });
+  }
+  return leaves;
 }
 
 // 캐시 지문: manifest의 콜 로그가 가리키는 모든 파일 내용의 sha1.

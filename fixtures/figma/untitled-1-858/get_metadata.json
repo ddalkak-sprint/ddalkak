@@ -1,0 +1,14 @@
+<frame id="1:858" name="[PC] /post/{id}/edit  (image case)" x="0" y="0" width="1920" height="1080">
+  <frame id="1:859" name="Frame 2384" x="0" y="132" width="1920" height="928">
+    <rounded-rectangle id="1:860" name="arches-national-park-gabc4bf2ae_1920 1" x="0" y="-216" width="1920" height="1359.9171142578125" />
+    <rounded-rectangle id="1:861" name="overlay" x="0" y="2" width="1920" height="926" />
+  </frame>
+  <instance id="1:862" name="card" x="1176" y="554" width="384" height="280" />
+  <instance id="1:863" name="card" x="768" y="246" width="384" height="280" />
+  <instance id="1:864" name="card" x="360" y="246" width="384" height="280" />
+  <instance id="1:865" name="card" x="360" y="554" width="384" height="280" />
+  <instance id="1:866" name="card" x="768" y="554" width="384" height="280" />
+  <instance id="1:867" name="card" x="1176" y="246" width="384" height="280" />
+  <instance id="1:868" name="header" x="0" y="0" width="1920" height="65" />
+  <instance id="1:869" name="header_service" x="0" y="65" width="1920" height="68" />
+</frame>

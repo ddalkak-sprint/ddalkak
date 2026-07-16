@@ -6,6 +6,12 @@ tools: ["*"]
 
 # figma-extractor 서브에이전트
 
+## 캐시 완결성 게이트
+
+cache 재생이면 `node scripts/mcp-cache.mjs check <cacheDir>`를 먼저 실행한다. 전체 섹션
+`get_design_context`가 `codeSummary`만 반환했다면 metadata의 모든 leaf node ID에 대한 상세 캐시가
+존재해야 한다. 누락 시 그 ID를 live MCP로 재호출하기 전에는 다음 단계로 진행하지 않는다.
+
 Figma MCP 호출이 반환하는 대용량 원본을 이 에이전트 안에서 처리하고, 상위에는
 **브릿지 스키마(v2.1)에 맞는 정규화 결과만** 반환한다 (원본 덤프로 상위 컨텍스트를 오염시키지 않음).
 
@@ -18,12 +24,13 @@ Figma MCP 호출이 반환하는 대용량 원본을 이 에이전트 안에서 
   + `manifest.json`에 콜 로그(도구/args/파일/scope) 추가. 호출 한도에 도중 걸려도 그때까지 받은 건 남는다.
 - `cache`: **MCP를 호출하지 않는다.** `cacheDir/manifest.json`을 읽어 각 도구 응답 파일을 찾아 그 내용을
   MCP 응답 대신 사용한다. 병합·정규화(아래)는 라이브와 동일 → 호출 0회로 스키마 산출·교차검증 테스트.
+  final 저장은 `scripts/bridge-from-cache.mjs`로 수행해 자산 로컬화와 검증까지 한 번에 끝낸다.
 
 ## 절차 — 7개 패스를 병렬로 실행 후 병합
 | 패스 | 소스 | 채우는 필드 |
 |------|------|-------------|
 | `structure` | `get_metadata` → **`node scripts/bridge-skeleton.mjs <cacheDir>`** | `screens[].nodes` 트리 + `bbox` (가지치기 전). 스켈레톤 스크립트가 부모 상대좌표로 변환한 수치를 **그대로 병합** — LLM이 좌표를 다시 쓰지 않는다(rules §8-2). 스켈레톤의 `metadataLeaf` 인스턴스 목록 = 재조합 후보 |
-| `detail` | `get_design_context` | 노드별 `style`(fills/strokes/effects/cornerRadius/opacity), `layout`(오토레이아웃 §7), `constraints`(§5), text `typography`/`runs`. **스켈레톤의 `metadataLeaf` 노드마다 그 노드 ID로 개별 호출**(rules §8-1) — 전체 섹션 1회 호출의 `codeSummary`(좌표 없는 자연어 요약)로 leaf 내부를 메꾸지 않는다 |
+| `detail` | `get_design_context` | 노드별 `style`(fills/strokes/effects/cornerRadius/opacity), `layout`(오토레이아웃 §7), `constraints`(§5), text `typography`/`runs`. **스켈레톤의 `metadataLeaf` 노드마다 그 노드 ID로 개별 호출**(rules §8-1) — 전체 섹션 1회 호출의 `codeSummary`(좌표 없는 자연어 요약)로 leaf 내부를 메꾸지 않는다. 코드 응답은 **`node scripts/design-context-to-bridge.mjs <캐시.json>`으로 브릿지 노드 초안을 기계 컴파일**한다(rules §8-2) — 구조·텍스트·스타일·에셋 ref·앵커 원형(§8-3)이 전부 초안에 담기므로 LLM은 스켈레톤과의 병합(instance/component 판별)만 하고 수치·구조·텍스트를 재전사하지 않는다. 좌표만 스팟 검증할 땐 `scripts/design-context-parse.mjs` |
 | `tokens` | `get_variable_defs` | `tokens.color/type/spacing/radius/effect`. detail 값 중 매핑되는 것을 `@ref`로 치환 (rules §4) |
 | `component-map` | `get_code_connect_map` + 인스턴스 메타 | `componentName`/`isDesignSystemComponent`/`mappedCodeComponent`/`componentProps` (rules §3) |
 | `assets` | `download_assets` | 장식 벡터·이미지 fill 실제 파일 export → 프로젝트 `.ddalkak/assets/<name>/`에 적재, `export`는 프로젝트 상대경로 → `assets[]` (rules §2, 무손실) |
@@ -47,7 +54,8 @@ Figma MCP 호출이 반환하는 대용량 원본을 이 에이전트 안에서 
 1. `structure` 트리에 `detail`·`component-map` 결과를 노드 단위로 부착.
 2. `tokens` 치환 — 매핑되는 값은 `@ref`, 아니면 raw 리터럴로 style을 **빠짐없이** 채운다 (§0-1, §4).
 3. 가지치기(§2) — 장식 서브트리를 vector/image 노드로 접고 `download_assets`로 export.
-4. 오토레이아웃(§7) + 반응형 그룹핑(§5, breakpoint/variantGroup) + 노드 constraints 부착.
+4. 플랫폼 중립 `layout/sizing/behavior`(§7) + 적응형 그룹핑(§5, adaptive) + 노드 constraints 부착.
+   같은 화면 변형에서 동일함이 확실한 노드만 `matchKey`로 연결하고, 추론 조건은 confidence를 남긴다.
 5. `semantic` 결과 부착 — `semanticRole`을 해당 노드에 병합. **비전이 MCP 수치·색·텍스트를 덮어쓰는 것은 금지**(§11 대원칙).
 6. **구조 추론(§12)** — Figma에 컴포넌트/그룹이 없어도 코드에 필요한 구조를 제안:
    - 반복 서브트리(비인스턴스) → 각 발생에 동일 `suggestedComponent`(PascalCase) + 발생 간 차이를 `suggestedProps`로.
@@ -60,6 +68,8 @@ Figma MCP 호출이 반환하는 대용량 원본을 이 에이전트 안에서 
    `confidence`(0.6~0.8) 마킹 필수 + 내부 형태 속성(원형/radius/테두리)을 스크린샷 크롭으로 스팟체크.
 8. **수치 정규화(§13)** — 스케일 아티팩트(공통 배율 곱)는 nominal 값으로 복원, 나머지 px는 정수 반올림
    (0<v<1은 소수 1자리). `gap: 1.818` → `2`, `padding: [5.455,10.909,…]` → `[6,12,…]`. 검증 §9 직전 마지막 단계.
+9. **완전성 판정(§15)** — 전 패스 성공이면 `meta.completeness: "full"`, 하나라도 실패하면 `"partial"`과
+   `meta.errors[]`를 기록한다. JSON Schema·adaptive 검증 경고가 남으면 조건부 통과로 보고한다.
 
 ## 반환 계약
 - `${CLAUDE_PLUGIN_ROOT}/shared/bridge.schema.json` (v2.1)를 따르는 JSON 오브젝트.
@@ -68,4 +78,5 @@ Figma MCP 호출이 반환하는 대용량 원본을 이 에이전트 안에서 
 - 스켈레톤(rules §8-2)이 준 bbox·크기 수치는 LLM이 수정·재전사하지 않는다. `validate-bridge.mjs`의
   수치 진실성 경고(rules §9-1)는 §8 교차검증 대상으로 삼아 보정하거나 confidence를 마킹한다.
 - `suggestedComponent`는 반복(≥2회) 근거가 있을 때만, `source: "inferred"` 합성 노드는 시각 결과를 바꾸지 않을 때만(§12).
+- CSS/Tailwind/SwiftUI/Compose 문법을 브릿지에 남기지 않는다. 관측한 크기·조건·레이아웃 의도만 중립 필드로 반환한다(§5/§15).
 - 모든 자산은 대상 프로젝트의 `.ddalkak/assets/<name>/`에 실제 파일로 적재되고, `assets[].export`는 **프로젝트 상대경로**로 채워짐(캐시/`fixtures` 경로를 가리키지 않음 — rules §2/§10). cache(replay) 산출 시에도 cacheDir 사본을 이 폴더로 복사한다.

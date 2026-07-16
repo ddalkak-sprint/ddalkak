@@ -160,13 +160,29 @@ plan-rules §2 매핑을 코드로 구현한다.
 ## 8. 프레임워크 분기
 - 기본 타깃은 React 웹. design.md의 "기술 스택"이 다른 것(Vue/Svelte/RN/Flutter 등)을 지정하면 그 스택의 관용 패턴으로 생성한다:
   컴포넌트 단위·스타일 적용 방식·파일 확장자·라우팅을 해당 스택에 맞춘다.
-  design.md가 없으면 package.json 의존성으로 스택을 먼저 판별한다(`vue` 존재 → Vue 등).
+  design.md가 없으면 package.json 의존성으로 스택을 먼저 판별한다(`vue` 존재 → Vue, `pubspec.yaml`에 `flutter` → Flutter 등).
+  Vue/Svelte/RN처럼 DOM 계열은 아래 치환표로 충분하지만, **Flutter는 웹과 근본이 달라 §8-1에서 별도로 다룬다.**
 - **스택별 관용 대응(결정론)**: 이 문서의 React 용어는 다음으로 치환한다 —
   index re-export 경로(Vue는 `.vue` 확장자 명시), 콘텐츠 슬롯(`children`↔`<slot>`),
   스타일 passthrough(`className`↔class fallthrough), 조건부 클래스 표기(§4-1), 타입 체크 도구(`tsc`↔`vue-tsc`).
   `content` 텍스트의 템플릿 특수문자는 스택별로 이스케이프한다(JSX `{`, Vue `{{`).
 - Tailwind 토큰 등록 시 `content` glob이 스택 확장자(`.vue` 등)를 포함하는지 확인한다 —
   누락되면 빌드는 통과하고 CSS만 조용히 비는 실패가 된다.
+
+### 8-1. Flutter (네이티브 위젯 — 웹 어휘 대응)
+Flutter는 웹이 아니다 — `className`·CSS·Tailwind·DOM·JSX가 없다. 이 문서의 웹 용어를 다음으로 치환한다(프로젝트별 구조·컨벤션은 언제나 design.md가 우선).
+- **컴포넌트 = Widget 클래스**: 기본 `StatelessWidget`, 상태가 필요할 때만 `StatefulWidget`. 파일은 `snake_case.dart`(한 파일 1위젯), 클래스명은 PascalCase, 페이지는 screen name → PascalCase 위젯. `.tsx` PascalCase 파일 규칙(§7)은 여기서 `snake_case.dart`로 치환된다.
+- **props = 생성자 named 파라미터**: `const Foo({super.key, required this.title, this.subtitle});`. 필수/선택 판별은 §7-1 그대로(브릿지 기준) — 필수는 `required`, 선택만 nullable/기본값.
+- **콘텐츠 슬롯**: 단일 텍스트 `content`는 `String` 파라미터로, 자식 위젯은 `Widget child`/`List<Widget> children`로 받는다(React `children`↔Vue `<slot>`의 Flutter판). 별도 텍스트 prop을 발명하지 않는다(§7-1).
+- **스타일 = 위젯 속성**: `className` 대신 `TextStyle`·`BoxDecoration`·위젯 속성으로 적용한다. 토큰은 design.md가 정한 방식(테마 상수/`ThemeData`/`Theme.of(context)`/디자인시스템)으로 참조하고, 없으면 Dart 상수로. 조건부 스타일은 build 내 삼항·분기로(§4-1 결정론 — 같은 토큰은 항상 같은 상수/스타일).
+- **명시값 우선(§4-2)**: bbox·간격·radius는 브릿지 수치를 논리 픽셀로 그대로 쓴다. 관습("아바타니까 원형")으로 근사·대체 금지.
+- **레이아웃(§5 대응)**: auto-layout → `Row`/`Column`(+`MainAxisAlignment`/`CrossAxisAlignment`), gap → `SizedBox`(또는 `spacing`), padding → `Padding`+`EdgeInsets`, 절대배치 → `Stack`+`Positioned`.
+- **passthrough**: 루트에 `super.key`를 받고 인스턴스별 배치값은 명명 파라미터나 부모 레이아웃 위젯으로 전달한다. 웹의 임의 className 병합은 없으니 래퍼 위젯 남발 금지(§7-1 정신).
+- **텍스트 이스케이프**: Dart 문자열 리터럴의 `$`·`${...}`는 `\$`로 이스케이프한다(§8 "템플릿 특수문자"의 Flutter판).
+- **타입/정적 게이트(§9)**: `tsc`/`vue-tsc` 대신 **`fvm flutter analyze`**(fvm 없으면 `flutter analyze`)가 필수 게이트다. Tailwind glob 규칙은 해당 없음.
+- **verify 진입점(필수)**: verify가 로그인·권한·라우팅을 우회해 대상 화면에 바로 도달하도록 code가 검수용 진입점을 함께 낸다 — deep link `ddalkak://preview?screen=<name>` 또는 프리뷰 route/위젯(`?screen=<name>`으로 화면 선택). 없으면 verify는 pass/fail이 아니라 blocked다(`docs/platform-verify.md`).
+  - **프리뷰는 대상 화면만 얹는 최소 root여야 한다.** 앱의 실제 `main()` 전역·네이티브 초기화(캡처 플랫폼이 지원하지 않는 플러그인 등)를 태우지 않는다 — 그래야 그 화면이 순수 UI면 캡처 런타임(예: Flutter Web)에서 컴파일·렌더된다. 대상 화면 자체가 미지원 네이티브 위젯을 쓰면 그 플랫폼 verify는 blocked다.
+- **verify 런타임(§9 dev 렌더의 Flutter판)**: 웹 dev 서버 대신 Flutter Web을 `fvm flutter run -d web-server`로 띄워 그 URL을 verify에 넘긴다. verify는 canvas라 DOM 없이 픽셀로만 판정한다(style은 `n/a`).
 
 ## 9. 빌드 검증 & 생성 후 보고
 - **타입 체크가 필수 게이트다.** 구현을 마치면 반드시 타입 체크를 실행한다

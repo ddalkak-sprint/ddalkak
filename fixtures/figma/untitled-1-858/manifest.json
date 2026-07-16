@@ -1,0 +1,22 @@
+{
+  "$comment": "MCP capture manifest for '[PC] /post/{id}/edit (image case)'. calls[] maps each file to the tool/node that produced it → enables --source cache replay. 계정: gyutae kim(awsrabbit2004@gmail.com), team key 1657013337799259961, seat View/starter.",
+  "source": {
+    "figmaUrl": "https://www.figma.com/design/Rbc7BOmxQFJPt1QOHGaRAS/제목-없음?node-id=1-858",
+    "fileKey": "Rbc7BOmxQFJPt1QOHGaRAS",
+    "page": "제목 없음",
+    "mode": "section"
+  },
+  "capturedAt": "2026-07-09",
+  "sections": [
+    { "name": "[PC] /post/{id}/edit  (image case)", "slug": "pc-post-edit", "nodeId": "1:858" }
+  ],
+  "calls": [
+    { "tool": "get_metadata", "scope": "section:pc-post-edit", "args": { "fileKey": "Rbc7BOmxQFJPt1QOHGaRAS", "nodeId": "1:858" }, "file": "get_metadata.json" },
+    { "tool": "get_design_context", "scope": "section:pc-post-edit", "args": { "fileKey": "Rbc7BOmxQFJPt1QOHGaRAS", "nodeId": "1:858" }, "file": "sections/pc-post-edit/get_design_context.json", "note": "요약(codeSummary) 아니라 전체 좌표 코드 반환 — pc-home과 달리 leaf 개별 재호출 불필요했음 (rules §8-1 실측)" },
+    { "tool": "get_screenshot", "scope": "section:pc-post-edit", "args": { "fileKey": "Rbc7BOmxQFJPt1QOHGaRAS", "nodeId": "1:858" }, "file": "sections/pc-post-edit/screenshot.png", "note": "1024x576로 리사이즈됨(원본 1920x1080) — scale=0.5333, edge 대조 시 반영 필요" }
+  ],
+  "pendingCalls": [
+    { "tool": "get_variable_defs", "note": "get_design_context 응답의 styles 목록으로 대체 가능 — 호출 절약을 위해 생략" },
+    { "tool": "download_assets", "note": "10개 자산(imgIcAdd24/25/26, imgIcArrowDown, imgImg, imgArchesNationalParkGabc4Bf2Ae19201, imgImage42/43, imgIconColor, imgEllipse13) — 이번 달 호출 한도(Starter, 월 6회) 절약 위해 보류. URL은 7일 유효(get_design_context 응답 내 assetConstants 참고, raw-code.jsx 상단 const 선언부)" }
+  ]
+}
